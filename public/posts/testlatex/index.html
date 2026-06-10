@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="test latex">
+  <title>TEST for Latex</title>
+  <link rel="stylesheet" href="/styles.css">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}, {left: '\\[', right: '\\]', display: true}, {left: '\\(', right: '\\)', display: false}], throwOnError: false});"></script>
+</head>
+<body>
+  <main class="wrapper">
+    <header class="site-header">
+      <div class="site-brand">
+        <h1>r-blog</h1>
+        <p>A personal blog built from Markdown content and published as static pages.</p>
+      </div>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="/">Home</a>
+      </nav>
+    </header>
+    <section class="article-shell">
+  <a class="back-link" href="/">&larr; Back to posts</a>
+  <article>
+  <div class="meta">2026-06-10</div>
+  <h1>TEST for Latex</h1>
+  <p class="meta">test latex</p>
+  <div><table><thead><tr><th></th><th>person1 👍</th><th>person2</th></tr></thead><tbody>
+<tr><td><strong>波形分量</strong></td><td>垂直分量</td><td><em>（未说明）</em></td></tr>
+<tr><td><strong>事件截取</strong></td><td>从地震波初至时间前10秒开始，向后截取200秒的地震记录</td><td>根据地震发生时刻<span class="math math-inline">T_0</span>截取地震发生前10s，以及之后300s的地震波形</td></tr>
+<tr><td><strong>滤波器</strong></td><td>带宽为<span class="math math-inline">f\pm1/3f</span>的4阶Butterworth带通滤波器</td><td>带宽为<span class="math math-inline">f\pm1/3f</span>的4阶Butterworth带通滤波器</td></tr>
+<tr><td><strong>中心频率</strong></td><td>1.5Hz、3Hz、6Hz、9Hz、12Hz、18Hz和24Hz</td><td>1.5Hz、3Hz、6Hz、9Hz、12Hz、18Hz和24Hz</td></tr>
+<tr><td><strong>尾波窗口起始时间</strong></td><td>用P波到时及发震时刻确定尾波窗口起始时间<br/><span class="math math-inline">T_s = 2\sqrt{3}(T_p-T_o)</span></td><td>对滤波后的数据选取两倍S波走时作为流逝时间窗的开始<br/><span class="math math-inline">T_s = 2\sqrt{3}(T_p-T_o)</span></td></tr>
+<tr><td><strong>滑动窗长</strong></td><td>动态采样：<br/>取滑动窗长为<span class="math math-inline">\frac{5}{f}</span>秒，步长为滑动窗长的一半<span class="math math-inline">\frac{5}{2f}</span>秒</td><td>动态采样：<br/>取滑动窗长为<span class="math math-inline">\frac{5}{f}</span>秒，步长为滑动窗长的一半<span class="math math-inline">\frac{5}{2f}</span>秒</td></tr>
+<tr><td><strong>流逝时间窗</strong></td><td>20s、30s 和40s</td><td>20s、30s 和40s</td></tr>
+<tr><td><strong>信噪比</strong></td><td><span class="math math-inline">SNR \ge 2</span> 和 <span class="math math-inline">SNR \ge 3</span> 以进行对比分析</td><td><span class="math math-inline">SNR \ge 3</span></td></tr>
+<tr><td><strong>最大相关系数</strong></td><td><span class="math math-inline">\le -0.6</span> 以及 <span class="math math-inline">\le -0.7</span> 以进行对比分析</td><td><span class="math math-inline">\le -0.6</span></td></tr>
+</tbody></table>
+<p>假设尾波 <span class="math math-inline">Q_c</span> 与频率 <span class="math math-inline">f</span> 满足幂函数关系：$ Q_c(f) = Q_0 \cdot f^\eta $</p>
+<ul>
+<li><strong><span class="math math-inline">Q_0</span></strong>：表示频率为 <strong>1Hz</strong> 时的 <span class="math math-inline">Q_c</span> 值，反映了该区域整体的衰减水平（构造越活跃，<span class="math math-inline">Q_0</span> 通常越低）</li>
+<li><span class="math math-inline">\eta</span> (eta)：频率依赖指数，反映了地下介质非均匀性的程度（构造越活跃，<span class="math math-inline">\eta</span> 通常越高）</li>
+</ul>
+<p>为了求解 <span class="math math-inline">Q_0</span> 和 <span class="math math-inline">\eta</span>，在公式两边取自然对数（或常用对数）：
+<span class="math math-display"> \ln(Q_c) = \ln(Q_0 \cdot f^\eta) </span>
+<span class="math math-display"> \ln(Q_c) = \ln(Q_0) + \eta \cdot \ln(f) </span></p>
+<p>这实际上就是一个一元一次线性方程 <span class="math math-inline">Y = ax + b</span>：</p>
+<ul>
+<li><span class="math math-inline">Y = \ln(Q_c)</span></li>
+<li><span class="math math-inline">X = \ln(f)</span></li>
+<li>斜率 <span class="math math-inline">a = \eta</span></li>
+<li>截距 <span class="math math-inline">b = \ln(Q_0)</span></li>
+</ul>
+<p><strong>实施目标：</strong> 通过线性回归求出斜率和截距，进而得到 <span class="math math-inline">\eta</span> 和 <span class="math math-inline">Q_0</span>（<span class="math math-inline">Q_0 = e^b</span>）。</p>
+</div>
+</article>
+    <footer>Built with Rust and Markdown.</footer>
+  </main>
+</body>
+</html>
