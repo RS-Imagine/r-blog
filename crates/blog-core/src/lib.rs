@@ -17,7 +17,13 @@ pub fn build_site(content_root: impl AsRef<Path>, output_root: impl AsRef<Path>)
     }
     fs::create_dir_all(output_root.join("posts"))?;
 
+    let static_dir = content_root.join("static");
+    if static_dir.exists() {
+        copy_dir_all(&static_dir, output_root)?;
+    }
+
     fs::write(output_root.join("styles.css"), render::stylesheet())?;
+    fs::write(output_root.join("favicon.svg"), render::favicon_svg())?;
     fs::write(
         output_root.join("index.html"),
         render::render_index(&config, &posts),
@@ -30,5 +36,25 @@ pub fn build_site(content_root: impl AsRef<Path>, output_root: impl AsRef<Path>)
     }
 
     fs::write(output_root.join("404.html"), render::render_404(&config))?;
+    Ok(())
+}
+
+fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result<()> {
+    let src = src.as_ref();
+    let dst = dst.as_ref();
+    if !src.exists() {
+        return Ok(());
+    }
+    fs::create_dir_all(dst)?;
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        let dest_path = dst.join(entry.file_name());
+        if ty.is_dir() {
+            copy_dir_all(entry.path(), dest_path)?;
+        } else {
+            fs::copy(entry.path(), dest_path)?;
+        }
+    }
     Ok(())
 }

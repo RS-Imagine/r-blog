@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="在后台增加了一键清理无用图片的功能">
+  <title>一键清理无用图片功能</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+</head>
+<body>
+  <main class="wrapper">
+    <header class="site-header">
+      <div class="site-brand">
+        <h1>Qiulin&#39;s Blog</h1>
+        <p>That is where the heart longs to be! (心之所向)</p>
+      </div>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="/">Home</a>
+      </nav>
+    </header>
+    <section class="article-shell">
+  <a class="back-link" href="/">&larr; Back to posts</a>
+  <article>
+  <div class="meta">2026-06-11</div>
+  <h1>一键清理无用图片功能</h1>
+  <p class="meta">在后台增加了一键清理无用图片的功能</p>
+  <div><h1>成功：一键清理无用图片功能</h1>
+<p>已经按照计划在后台增加了一键清理无用图片的功能，现在可以毫无顾虑地上传图片了！</p>
+<h2>具体更新内容</h2>
+<h3>1. 清理路由机制</h3>
+<p>在 <code>admin/src/main.rs</code> 中新增了一个专门负责清理工作的 API <code>POST /api/cleanup-images</code>：</p>
+<ul>
+<li>该接口会主动读取所有 <code>.md</code> 文章文件（从 <code>content/posts/</code> 目录下）。</li>
+<li>它会使用简单的字符串扫描寻找任何类似 <code>/images/xxxx.png</code> 格式的引用链接，并提取文件名，记录在内存的白名单里。</li>
+<li>接着，它会检查 <code>content/static/images/</code> 目录中所有的物理文件，如果在上述白名单里没有找到该文件名，程序就会果断且安全地把它从磁盘上删除掉，以此释放储存空间。</li>
+</ul>
+<h3>2. 界面按钮</h3>
+<p>在后台的首页面板 (<code>dashboard</code>) 中：</p>
+<ul>
+<li>在原有的 “New Post” 和 “Rebuild Site” 旁边，添加了一个红色的 <strong>“Clean Up Images”</strong> 按钮。</li>
+<li>出于安全考虑，这个按钮被按下去时会首先弹出一个系统确认框，只有点击“确认”以后，才会提交清理请求，避免由于手滑造成意外删除。</li>
+</ul>
+<h2>如何测试使用？</h2>
+<ol>
+<li>确保后台程序已运行：<code>cargo run --bin admin</code></li>
+<li>上传两张图片到任何文章中（或者甚至不用保存文章，直接在界面里点击上传图片）。</li>
+<li>保存或离开页面，确保这之中至少有一张图片<strong>没有</strong>以 <code>![xxx](/images/xxx.png)</code> 的形式保留在最终的 <code>.md</code> 文件正文里。</li>
+<li>返回主控制面板，点击 <strong>Clean Up Images</strong> 按钮并确认。</li>
+<li>会看到一个新的成功提示页面，上面会清晰地标出刚才删除了多少张没被使用的垃圾图片！</li>
+</ol>
+<p><img src="/images/image.png" alt="image.png" /></p>
+</div>
+</article>
+    <footer>Qiulin built this website using Rust.</footer>
+  </main>
+</body>
+</html>

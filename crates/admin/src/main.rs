@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use axum::{
-    extract::{Path, State},
+    extract::{Multipart, Path, State},
     response::{Html, Redirect},
     routing::{get, post},
     Form, Json, Router,
@@ -11,6 +11,8 @@ use serde::Deserialize;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use tokio::net::TcpListener;
+use std::fs;
+use std::collections::HashSet;
 
 #[derive(Clone)]
 struct AppState {
@@ -52,6 +54,9 @@ async fn main() -> Result<()> {
         .route("/posts/{slug}/delete", post(delete_post))
         .route("/build", post(rebuild_site))
         .route("/api/posts", get(list_posts))
+        .route("/api/upload", post(upload_image))
+        .route("/api/cleanup-images", post(cleanup_images))
+        .layer(axum::extract::DefaultBodyLimit::max(10 * 1024 * 1024))
         .with_state(state);
 
     let addr: SocketAddr = "127.0.0.1:8787".parse().expect("valid local address");
@@ -113,7 +118,7 @@ async fn create_post(
     State(state): State<AppState>,
     Form(input): Form<PostForm>,
 ) -> Result<Redirect, (axum::http::StatusCode, String)> {
-    save_post_form(&state.content_root, input, None).map_err(internal_error)?;
+    save_post_form(&state.content_root, input, None, false).map_err(internal_error)?;
     Ok(Redirect::to("/"))
 }
 
@@ -122,7 +127,7 @@ async fn update_post(
     Path(slug): Path<String>,
     Form(input): Form<PostForm>,
 ) -> Result<Redirect, (axum::http::StatusCode, String)> {
-    let final_slug = save_post_form(&state.content_root, input, Some(&slug)).map_err(internal_error)?;
+    let final_slug = save_post_form(&state.content_root, input, Some(&slug), true).map_err(internal_error)?;
     if final_slug != slug {
         content::delete_post(&state.content_root, &slug).map_err(internal_error)?;
     }
@@ -138,8 +143,75 @@ async fn delete_post(
 }
 
 async fn rebuild_site(State(state): State<AppState>) -> Result<Redirect, (axum::http::StatusCode, String)> {
-    blog_core::build_site(&state.content_root, &state.output_root).map_err(internal_error)?;
+    blog_core::build_site(&state.content_root, &state.output_root).map_err(|e| internal_error(e))?;
     Ok(Redirect::to("/"))
+}
+
+async fn cleanup_images(State(state): State<AppState>) -> Result<Html<String>, (axum::http::StatusCode, String)> {
+    let posts = content::load_posts(&state.content_root).unwrap_or_default();
+    let mut referenced_images = HashSet::new();
+
+    for post in posts {
+        let body = &post.body_markdown;
+        let mut start_idx = 0;
+        while let Some(idx) = body[start_idx..].find("/images/") {
+            let actual_idx = start_idx + idx;
+            let img_start = actual_idx + 8;
+            
+            let mut img_end = img_start;
+            for ch in body[img_start..].chars() {
+                if ch == ')' || ch == '"' || ch.is_whitespace() {
+                    break;
+                }
+                img_end += ch.len_utf8();
+            }
+            
+            let img_name = &body[img_start..img_end];
+            if !img_name.is_empty() {
+                referenced_images.insert(img_name.to_string());
+            }
+            start_idx = img_end;
+        }
+    }
+
+    let images_dir = state.content_root.join("static").join("images");
+    let mut deleted_count = 0;
+
+    if images_dir.exists() {
+        if let Ok(entries) = fs::read_dir(&images_dir) {
+            for entry in entries.flatten() {
+                if let Ok(ty) = entry.file_type() {
+                    if ty.is_file() {
+                        let file_name = entry.file_name().to_string_lossy().to_string();
+                        if !referenced_images.contains(&file_name) {
+                            if fs::remove_file(entry.path()).is_ok() {
+                                deleted_count += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(Html(render_page(
+        "Cleanup Complete",
+        &format!(
+            r#"<article class="panel form-panel">
+  <div class="panel-header">
+    <div>
+      <span class="badge">Cleanup complete</span>
+      <h1>Cleaned up images</h1>
+    </div>
+  </div>
+  <p>Deleted {} unused images.</p>
+  <div class="form-actions" style="margin-top: 20px;">
+    <a class="button primary" href="/">Back to Dashboard</a>
+  </div>
+</article>"#,
+            deleted_count
+        ),
+    )))
 }
 
 async fn list_posts(State(state): State<AppState>) -> Json<Vec<content::Post>> {
@@ -147,19 +219,57 @@ async fn list_posts(State(state): State<AppState>) -> Json<Vec<content::Post>> {
     Json(posts)
 }
 
+async fn upload_image(
+    State(state): State<AppState>,
+    mut multipart: Multipart,
+) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+    let images_dir = state.content_root.join("static").join("images");
+    fs::create_dir_all(&images_dir).map_err(internal_error)?;
+
+    let mut url = String::new();
+
+    while let Some(field) = multipart.next_field().await.map_err(internal_error)? {
+        let name = field.name().unwrap_or("").to_string();
+        if name == "image" || name == "file" {
+            let file_name = field.file_name().unwrap_or("image.png").to_string();
+            let file_name = file_name.replace('/', "").replace('\\', "");
+            let data = field.bytes().await.map_err(internal_error)?;
+            let file_path = images_dir.join(&file_name);
+            fs::write(&file_path, &data).map_err(internal_error)?;
+            url = format!("/images/{}", file_name);
+            break;
+        }
+    }
+
+    if url.is_empty() {
+        return Err((axum::http::StatusCode::BAD_REQUEST, "No file provided".to_string()));
+    }
+
+    Ok(Json(serde_json::json!({ "url": url })))
+}
+
 fn save_post_form(
     content_root: &std::path::Path,
     input: PostForm,
     existing_slug: Option<&str>,
+    is_update: bool,
 ) -> Result<String> {
     let slug = normalized_slug(&input, existing_slug);
     let date = input
         .date
         .filter(|value| !value.trim().is_empty())
         .unwrap_or_else(today_string);
+
+    let updated = if is_update {
+        Some(today_string())
+    } else {
+        None
+    };
+
     let draft = PostDraft {
         title: input.title,
         date,
+        updated,
         slug: slug.clone(),
         description: input.description,
         draft: input.draft.is_some(),
@@ -226,6 +336,9 @@ fn render_dashboard(posts: &[content::Post]) -> String {
     <form method="post" action="/build">
       <button class="button" type="submit">Rebuild Site</button>
     </form>
+    <form method="post" action="/api/cleanup-images" onsubmit="return confirm('Are you sure you want to delete all unused images?');">
+      <button class="button danger" type="button" onclick="if(confirm('Are you sure you want to delete all unused images?')) this.form.submit();">Clean Up Images</button>
+    </form>
   </div>
 </section>
 <section class="panel">
@@ -272,14 +385,75 @@ fn render_post_form(title: &str, action: &str, submit_label: &str, data: &PostFo
       <span>Save as draft</span>
     </label>
     <label>
-      <span>Body</span>
-      <textarea name="body_markdown" rows="18" required>{body_value}</textarea>
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <span>Body</span>
+        <label for="image-upload" style="cursor: pointer; color: var(--accent); font-size: 0.9em; font-weight: normal;">Upload Image...</label>
+        <input type="file" id="image-upload" accept="image/*" style="display: none;" onchange="uploadImage(this)">
+      </div>
+      <textarea id="body_markdown" name="body_markdown" rows="18" required>{body_value}</textarea>
     </label>
     <div class="form-actions">
       <button class="button primary" type="submit">{submit_label}</button>
       <a class="button" href="/">Cancel</a>
     </div>
   </form>
+  <script>
+  async function uploadImage(input) {{
+    const file = input.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    try {{
+      const res = await fetch('/api/upload', {{ method: 'POST', body: formData }});
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      if (data.url) {{
+        const textarea = document.getElementById('body_markdown');
+        const textToInsert = `\n![${{file.name}}](${{data.url}})\n`;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        textarea.value = textarea.value.substring(0, start) + textToInsert + textarea.value.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + textToInsert.length;
+        textarea.focus();
+      }}
+    }} catch (e) {{
+      alert('Upload failed: ' + e);
+    }}
+    input.value = '';
+  }}
+
+  document.getElementById('body_markdown').addEventListener('paste', async (e) => {{
+    const items = (e.clipboardData || window.clipboardData).items;
+    for (let index in items) {{
+      const item = items[index];
+      if (item.kind === 'file' && item.type.startsWith('image/')) {{
+        const file = item.getAsFile();
+        if (!file) continue;
+        e.preventDefault();
+        
+        const formData = new FormData();
+        formData.append('file', file, file.name || 'pasted-image.png');
+        try {{
+          const res = await fetch('/api/upload', {{ method: 'POST', body: formData }});
+          if (!res.ok) throw new Error(await res.text());
+          const data = await res.json();
+          if (data.url) {{
+            const textarea = document.getElementById('body_markdown');
+            const textToInsert = `\n![${{file.name || 'image'}}](${{data.url}})\n`;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            textarea.value = textarea.value.substring(0, start) + textToInsert + textarea.value.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + textToInsert.length;
+            textarea.focus();
+          }}
+        }} catch (err) {{
+          alert('Upload pasted image failed: ' + err);
+        }}
+        break; // Only handle the first image
+      }}
+    }}
+  }});
+  </script>
 </section>"#,
             title = escape_html(title),
             action = escape_html(action),
@@ -375,7 +549,7 @@ fn today_string() -> String {
     Local::now().date_naive().format("%F").to_string()
 }
 
-fn internal_error(error: anyhow::Error) -> (axum::http::StatusCode, String) {
+fn internal_error<E: std::fmt::Display>(error: E) -> (axum::http::StatusCode, String) {
     (axum::http::StatusCode::INTERNAL_SERVER_ERROR, error.to_string())
 }
 

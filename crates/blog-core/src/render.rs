@@ -126,6 +126,7 @@ a:hover { color: var(--accent-strong); }
 }
 .grid { display: grid; gap: 0; }
 .post-card {
+  width: 100%;
   padding: 22px 0 24px;
   border-bottom: 1px solid var(--border-soft);
   transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease;
@@ -167,53 +168,53 @@ a:hover { color: var(--accent-strong); }
 .article-shell {
   padding: 10px 0 0;
 }
-article {
+.article-shell article {
   max-width: 760px;
   margin: 0 auto;
   padding: 0;
 }
-article h1 {
+.article-shell article h1 {
   margin: 6px 0 14px;
   font-size: clamp(2rem, 4vw, 3.4rem);
   line-height: 1.12;
   letter-spacing: -0.025em;
 }
-article h2, article h3 {
+.article-shell article h2, .article-shell article h3 {
   margin: 2em 0 0.7em;
   line-height: 1.2;
 }
-article h2 {
+.article-shell article h2 {
   font-size: 1.55rem;
 }
-article h3 {
+.article-shell article h3 {
   font-size: 1.22rem;
 }
-article p, article ul, article ol, article blockquote, article table {
+.article-shell article p, .article-shell article ul, .article-shell article ol, .article-shell article blockquote, .article-shell article table {
   margin: 1em 0;
 }
-article p:first-of-type {
+.article-shell article p:first-of-type {
   font-size: 1.05rem;
 }
-article li + li { margin-top: 0.3em; }
-article img {
+.article-shell article li + li { margin-top: 0.3em; }
+.article-shell article img {
   max-width: 100%;
   border-radius: 16px;
   display: block;
   margin: 1.4rem 0;
 }
-article hr {
+.article-shell article hr {
   border: 0;
   border-top: 1px solid var(--border-soft);
   margin: 2.4rem 0;
 }
-article blockquote {
+.article-shell article blockquote {
   margin-left: 0;
   padding: 0.3rem 0 0.3rem 1.1rem;
   border-left: 3px solid var(--accent);
   color: var(--muted);
   font-style: italic;
 }
-article pre {
+.article-shell article pre {
   overflow-x: auto;
   padding: 18px 20px;
   border-radius: 18px;
@@ -222,31 +223,31 @@ article pre {
   border: 1px solid #272c34;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
-article pre code {
+.article-shell article pre code {
   background: transparent;
   padding: 0;
   border-radius: 0;
   color: inherit;
 }
-article code {
+.article-shell article code {
   background: var(--code-bg);
   padding: 0.15rem 0.35rem;
   border-radius: 6px;
   font-size: 0.95em;
 }
-article .katex,
-article .katex-display {
+.article-shell article .katex,
+.article-shell article .katex-display {
   font-size: 1em;
 }
-article .katex-display {
+.article-shell article .katex-display {
   margin: 1.1rem 0;
   overflow-x: auto;
   overflow-y: hidden;
 }
-article .katex-display > .katex {
+.article-shell article .katex-display > .katex {
   font-size: 1.02em;
 }
-article kbd {
+.article-shell article kbd {
   display: inline-block;
   padding: 0.14rem 0.42rem;
   border-radius: 6px;
@@ -254,20 +255,20 @@ article kbd {
   background: #fff;
   font-size: 0.88em;
 }
-article table {
+.article-shell article table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.96rem;
   overflow: hidden;
   border-radius: 14px;
 }
-article th, article td {
+.article-shell article th, .article-shell article td {
   border-bottom: 1px solid var(--border-soft);
   text-align: left;
   padding: 0.65rem 0.35rem;
   vertical-align: top;
 }
-article thead th {
+.article-shell article thead th {
   background: rgba(15, 118, 110, 0.06);
   color: var(--accent-strong);
 }
@@ -300,17 +301,38 @@ footer {
     )
 }
 
+pub fn favicon_svg() -> String {
+    String::from(
+        r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#aa6321ff"/>
+      <stop offset="100%" stop-color="#a15600ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <text x="64" y="96" text-anchor="middle" font-family="Georgia, serif" font-size="92" font-weight="700" fill="#fffdf8">Q</text>
+</svg>"##,
+    )
+}
+
 pub fn render_index(config: &SiteConfig, posts: &[Post]) -> String {
     let mut cards = String::new();
 
     for post in posts.iter().filter(|post| !post.draft()) {
+        let date_str = if let Some(updated) = post.updated() {
+            format!("{} (Updated: {})", post.date(), updated)
+        } else {
+            post.date().to_string()
+        };
+
         cards.push_str(&format!(
             r#"<article class="post-card">
   <div class="meta">{date}</div>
   <h2><a href="/posts/{slug}/">{title}</a></h2>
   <p>{description}</p>
 </article>"#,
-            date = escape_html(post.date()),
+            date = escape_html(&date_str),
             slug = escape_html(post.slug()),
             title = escape_html(post.title()),
             description = escape_html(post.description()),
@@ -332,7 +354,7 @@ pub fn render_index(config: &SiteConfig, posts: &[Post]) -> String {
   {cards}
 </section>"#,
             author = escape_html(&config.author),
-            title = escape_html(&config.title),
+            title = escape_html(config.big_title.as_deref().unwrap_or(&config.title)),
             subtitle = escape_html(&config.subtitle),
             cards = cards,
         ),
@@ -354,7 +376,7 @@ pub fn render_post(config: &SiteConfig, post: &Post) -> String {
   <p class="meta">{description}</p>
   <div>{body}</div>
 </article>"#,
-            date = escape_html(post.date()),
+            date = escape_html(&post.updated().map(|u| format!("{} (Updated: {})", post.date(), u)).unwrap_or_else(|| post.date().to_string())),
             title = escape_html(post.title()),
             description = escape_html(post.description()),
             body = post.body_html,
@@ -392,6 +414,7 @@ fn page(
   <meta name="description" content="{description}">
   <title>{title}</title>
   <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 </head>

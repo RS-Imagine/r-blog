@@ -8,6 +8,8 @@ use std::path::{Path, PathBuf};
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SiteConfig {
     pub title: String,
+    #[serde(rename = "bigTitle", default)]
+    pub big_title: Option<String>,
     pub subtitle: String,
     pub author: String,
     pub description: String,
@@ -17,6 +19,7 @@ impl Default for SiteConfig {
     fn default() -> Self {
         Self {
             title: "r-blog".to_string(),
+            big_title: None,
             subtitle: "Rust, Markdown, and Cloudflare Pages".to_string(),
             author: "Your Name".to_string(),
             description: "A personal blog built from Markdown content.".to_string(),
@@ -28,6 +31,8 @@ impl Default for SiteConfig {
 pub struct FrontMatter {
     pub title: String,
     pub date: String,
+    #[serde(default)]
+    pub updated: Option<String>,
     pub slug: String,
     #[serde(default)]
     pub description: String,
@@ -39,6 +44,7 @@ pub struct FrontMatter {
 pub struct PostDraft {
     pub title: String,
     pub date: String,
+    pub updated: Option<String>,
     pub slug: String,
     pub description: String,
     #[serde(default)]
@@ -64,6 +70,10 @@ impl Post {
 
     pub fn date(&self) -> &str {
         &self.front_matter.date
+    }
+
+    pub fn updated(&self) -> Option<&str> {
+        self.front_matter.updated.as_deref()
     }
 
     pub fn description(&self) -> &str {
@@ -103,7 +113,11 @@ pub fn load_posts(content_root: impl AsRef<Path>) -> Result<Vec<Post>> {
         posts.push(load_post_file(&path)?);
     }
 
-    posts.sort_by(|left, right| right.date().cmp(left.date()).then_with(|| right.slug().cmp(left.slug())));
+    posts.sort_by(|left, right| {
+        let l_time = left.updated().unwrap_or(left.date());
+        let r_time = right.updated().unwrap_or(right.date());
+        r_time.cmp(l_time).then_with(|| right.slug().cmp(left.slug()))
+    });
     Ok(posts)
 }
 
@@ -139,6 +153,7 @@ pub fn save_post(content_root: impl AsRef<Path>, draft: &PostDraft) -> Result<Pa
     let front_matter = FrontMatter {
         title: draft.title.clone(),
         date: draft.date.clone(),
+        updated: draft.updated.clone(),
         slug: draft.slug.clone(),
         description: draft.description.clone(),
         draft: draft.draft,

@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1"
-axum = "0.8"
+axum = { version = "0.8", features = ["multipart"] }
 blog-core = { path = "../blog-core" }
 chrono = { version = "0.4", features = ["clock"] }
 serde = { version = "1", features = ["derive"] }
