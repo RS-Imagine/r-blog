@@ -1,0 +1,7 @@
+[workspace]
+members = [
+  "crates/blog-core",
+  "crates/sitegen",
+  "crates/admin",
+]
+resolver = "2"

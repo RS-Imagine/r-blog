@@ -1,0 +1,4 @@
+title = "r-blog"
+subtitle = "Rust, Markdown, and a free-tier friendly publishing flow"
+author = "Your Name"
+description = "A personal blog built from Markdown content and published as static pages."
