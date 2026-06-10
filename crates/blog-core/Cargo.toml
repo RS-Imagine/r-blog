@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1"
+katex = { package = "katex-rs", version = "0.2.4" }
 pulldown-cmark = "0.13"
 serde = { version = "1", features = ["derive"] }
 toml = "0.8"

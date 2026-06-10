@@ -66,7 +66,6 @@ a {
 }
 a:hover { color: var(--accent-strong); }
 .wrapper {
-  position: relative;
   z-index: 1;
   max-width: var(--max-width);
   margin: 0 auto;
@@ -76,7 +75,6 @@ a:hover { color: var(--accent-strong); }
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  align-items: flex-end;
   padding: 18px 0 24px;
   border-bottom: 1px solid var(--border-soft);
   margin-bottom: 28px;
@@ -231,6 +229,18 @@ article code {
   padding: 0.15rem 0.35rem;
   border-radius: 6px;
   font-size: 0.95em;
+}
+article .katex,
+article .katex-display {
+  font-size: 1em;
+}
+article .katex-display {
+  margin: 1.1rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+article .katex-display > .katex {
+  font-size: 1.02em;
 }
 article kbd {
   display: inline-block;

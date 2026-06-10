@@ -1,4 +1,5 @@
 use anyhow::{bail, Context, Result};
+use katex::{render_to_string, KatexContext, Settings};
 use pulldown_cmark::{html, Options, Parser};
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -225,8 +226,209 @@ fn split_front_matter(source: &str) -> Result<(String, String)> {
 }
 
 fn markdown_to_html(markdown: &str) -> String {
-    let parser = Parser::new_ext(markdown, Options::all());
+    let (processed_markdown, math_segments) = preprocess_math(markdown);
+    let parser = Parser::new_ext(&processed_markdown, Options::all());
     let mut html_output = String::new();
     html::push_html(&mut html_output, parser);
+
+    for segment in math_segments {
+        let rendered = render_math_expr(&segment.math, segment.display_mode);
+        html_output = html_output.replace(&segment.placeholder, &rendered);
+        if segment.display_mode {
+            html_output = html_output.replace(
+                &format!("<p>{}</p>", segment.placeholder),
+                &format!("<div class=\"math-block\">{rendered}</div>"),
+            );
+        }
+    }
+
     html_output
+}
+
+#[derive(Debug, Clone)]
+struct MathSegment {
+    placeholder: String,
+    math: String,
+    display_mode: bool,
+}
+
+fn preprocess_math(markdown: &str) -> (String, Vec<MathSegment>) {
+    let mut output = String::new();
+    let mut in_fenced_code_block = false;
+    let mut in_block_math = false;
+    let mut block_math = String::new();
+    let mut math_segments = Vec::new();
+    let mut math_counter = 0usize;
+
+    for line in markdown.lines() {
+        let trimmed = line.trim();
+
+        if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
+            if !in_block_math {
+                in_fenced_code_block = !in_fenced_code_block;
+            }
+            output.push_str(line);
+            output.push('\n');
+            continue;
+        }
+
+        if in_fenced_code_block {
+            output.push_str(line);
+            output.push('\n');
+            continue;
+        }
+
+        if trimmed == "$$" {
+            if in_block_math {
+                let placeholder = format!("<div class=\"math-block\" data-math-placeholder=\"{}\"></div>", math_counter);
+                math_segments.push(MathSegment {
+                    placeholder: placeholder.clone(),
+                    math: block_math.trim().to_string(),
+                    display_mode: true,
+                });
+                math_counter += 1;
+                output.push_str(&placeholder);
+                output.push('\n');
+                block_math.clear();
+                in_block_math = false;
+            } else {
+                in_block_math = true;
+            }
+            continue;
+        }
+
+        if in_block_math {
+            block_math.push_str(line);
+            block_math.push('\n');
+            continue;
+        }
+
+        if trimmed.starts_with("$$") && trimmed.ends_with("$$") && trimmed.len() > 4 {
+            let inner = trimmed.trim_start_matches("$$").trim_end_matches("$$").trim();
+            let placeholder = format!("<div class=\"math-block\" data-math-placeholder=\"{}\"></div>", math_counter);
+            math_segments.push(MathSegment {
+                placeholder: placeholder.clone(),
+                math: inner.to_string(),
+                display_mode: true,
+            });
+            math_counter += 1;
+            output.push_str(&placeholder);
+            output.push('\n');
+            continue;
+        }
+
+        output.push_str(&render_inline_math(line, &mut math_segments, &mut math_counter));
+        output.push('\n');
+    }
+
+    if in_block_math {
+        output.push_str("$$\n");
+        output.push_str(&block_math);
+    }
+
+    (output, math_segments)
+}
+
+fn render_inline_math(
+    line: &str,
+    math_segments: &mut Vec<MathSegment>,
+    math_counter: &mut usize,
+) -> String {
+    let chars: Vec<(usize, char)> = line.char_indices().collect();
+    let mut output = String::new();
+    let mut index = 0;
+    let mut in_inline_code = false;
+
+    while index < chars.len() {
+        let (_, ch) = chars[index];
+
+        if ch == '`' {
+            in_inline_code = !in_inline_code;
+            output.push(ch);
+            index += 1;
+            continue;
+        }
+
+        if ch == '\\' {
+            output.push(ch);
+            if let Some((_, next)) = chars.get(index + 1) {
+                output.push(*next);
+                index += 2;
+            } else {
+                index += 1;
+            }
+            continue;
+        }
+
+        if ch == '$' && !in_inline_code {
+            if chars.get(index + 1).map(|(_, next)| *next) == Some('$') {
+                output.push_str("$$");
+                index += 2;
+                continue;
+            }
+
+            let mut math = String::new();
+            let mut lookahead = index + 1;
+            let mut found_closing = false;
+
+            while lookahead < chars.len() {
+                let (_, next_ch) = chars[lookahead];
+
+                if next_ch == '\\' {
+                    math.push(next_ch);
+                    if let Some((_, escaped)) = chars.get(lookahead + 1) {
+                        math.push(*escaped);
+                        lookahead += 2;
+                    } else {
+                        lookahead += 1;
+                    }
+                    continue;
+                }
+
+                if next_ch == '$' {
+                    found_closing = true;
+                    break;
+                }
+
+                math.push(next_ch);
+                lookahead += 1;
+            }
+
+            if found_closing {
+                let placeholder = format!("<span class=\"math math-inline\" data-math-placeholder=\"{}\"></span>", *math_counter);
+                math_segments.push(MathSegment {
+                    placeholder: placeholder.clone(),
+                    math,
+                    display_mode: false,
+                });
+                *math_counter += 1;
+                output.push_str(&placeholder);
+                index = lookahead + 1;
+                continue;
+            }
+        }
+
+        output.push(ch);
+        index += 1;
+    }
+
+    output
+}
+
+fn render_math_expr(math: &str, display_mode: bool) -> String {
+    let ctx = KatexContext::default();
+    let mut settings = Settings::default();
+    settings.display_mode = display_mode;
+    settings.throw_on_error = false;
+
+    render_to_string(&ctx, math, &settings).unwrap_or_else(|_| format!("<code>{}</code>", escape_html(math)))
+}
+
+fn escape_html(input: &str) -> String {
+    input
+        .replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "&#39;")
 }

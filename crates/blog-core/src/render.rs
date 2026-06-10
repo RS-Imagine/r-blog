@@ -70,7 +70,6 @@ a {
 }
 a:hover { color: var(--accent-strong); }
 .wrapper {
-  position: relative;
   z-index: 1;
   max-width: var(--max-width);
   margin: 0 auto;
@@ -80,7 +79,6 @@ a:hover { color: var(--accent-strong); }
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  align-items: flex-end;
   padding: 18px 0 24px;
   border-bottom: 1px solid var(--border-soft);
   margin-bottom: 28px;
@@ -236,6 +234,18 @@ article code {
   border-radius: 6px;
   font-size: 0.95em;
 }
+article .katex,
+article .katex-display {
+  font-size: 1em;
+}
+article .katex-display {
+  margin: 1.1rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+article .katex-display > .katex {
+  font-size: 1.02em;
+}
 article kbd {
   display: inline-block;
   padding: 0.14rem 0.42rem;
@@ -373,7 +383,6 @@ fn page(
   site_description: &str,
   body: &str,
 ) -> String {
-    let math_assets = math_assets();
     format!(
         r#"<!doctype html>
 <html lang="en">
@@ -383,7 +392,8 @@ fn page(
   <meta name="description" content="{description}">
   <title>{title}</title>
   <link rel="stylesheet" href="/styles.css">
-  {math_assets}
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 </head>
 <body>
   <main class="wrapper">
@@ -397,7 +407,7 @@ fn page(
       </nav>
     </header>
     {body}
-    <footer>Built with Rust and Markdown.</footer>
+    <footer>Qiulin built this website using Rust.</footer>
   </main>
 </body>
 </html>"#,
@@ -405,17 +415,7 @@ fn page(
         description = escape_html(description),
         site_title = escape_html(site_title),
         site_description = escape_html(site_description),
-        math_assets = math_assets,
         body = body,
-    )
-}
-
-fn math_assets() -> String {
-    String::from(
-        r#"  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}, {left: '\\[', right: '\\]', display: true}, {left: '\\(', right: '\\)', display: false}], throwOnError: false});"></script>"#,
     )
 }
 
