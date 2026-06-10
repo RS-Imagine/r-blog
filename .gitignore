@@ -1,3 +1,5 @@
+content/
+public/
 target/
 .DS_Store
 Thumbs.db
