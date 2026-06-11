@@ -1,4 +1,4 @@
-use crate::content::{Post, SiteConfig};
+use crate::content::{Post, SiteConfig, Page};
 
 pub fn stylesheet() -> String {
     String::from(
@@ -338,6 +338,27 @@ footer {
   .site-nav { justify-content: flex-start; }
   .hero h1, article h1 { letter-spacing: -0.01em; }
 }
+.zoom-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--bg);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+  z-index: 100;
+}
+.zoom-overlay.active {
+  opacity: 0.95;
+  visibility: visible;
+}
+article img {
+  transition: transform 0.3s ease;
+  position: relative;
+}
+article img.zoomed {
+  z-index: 101;
+  cursor: zoom-out !important;
+}
 "#,
     )
 }
@@ -399,6 +420,7 @@ pub fn render_index(config: &SiteConfig, posts: &[Post]) -> String {
             subtitle = escape_html(&config.subtitle),
             cards = cards,
         ),
+        "",
     )
 }
 
@@ -416,11 +438,51 @@ pub fn render_post(config: &SiteConfig, post: &Post) -> String {
   <h1>{title}</h1>
   <p class="meta">{description}</p>
   <div>{body}</div>
-</article>"#,
+  <div class="share-container" style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-soft);">
+    <button id="share-btn" style="background: var(--accent); color: var(--bg); border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+      </svg>
+      Share
+    </button>
+  </div>
+</article></section>"#,
             date = escape_html(&post.updated().map(|u| format!("{} (Updated: {})", post.date(), u)).unwrap_or_else(|| post.date().to_string())),
             title = escape_html(post.title()),
             description = escape_html(post.description()),
             body = post.body_html,
+        ),
+        &format!(
+            r#"<meta property="og:title" content="{title}">
+<meta property="og:description" content="{description}">
+<meta property="og:type" content="article">"#,
+            title = escape_html(post.title()),
+            description = escape_html(post.description()),
+        ),
+    )
+}
+
+pub fn render_page(config: &SiteConfig, page_content: &Page) -> String {
+    page(
+        &page_content.front_matter.title,
+        &page_content.front_matter.description,
+        &config.title,
+        &config.description,
+        &format!(
+            r#"<section class="article-shell">
+  <article>
+  <h1>{title}</h1>
+  <div>{body}</div>
+</article></section>"#,
+            title = escape_html(&page_content.front_matter.title),
+            body = page_content.body_html,
+        ),
+        &format!(
+            r#"<meta property="og:title" content="{title}">
+<meta property="og:description" content="{description}">
+<meta property="og:type" content="website">"#,
+            title = escape_html(&page_content.front_matter.title),
+            description = escape_html(&page_content.front_matter.description),
         ),
     )
 }
@@ -436,6 +498,7 @@ pub fn render_404(config: &SiteConfig) -> String {
   <p>The page you are looking for does not exist.</p>
   <a href="/">Go back home</a>
 </article>"#,
+        "",
     )
 }
 
@@ -445,6 +508,7 @@ fn page(
   site_title: &str,
   site_description: &str,
   body: &str,
+  extra_head: &str,
 ) -> String {
     format!(
         r#"<!doctype html>
@@ -458,6 +522,7 @@ fn page(
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  {extra_head}
 </head>
 <body>
   <main class="wrapper">
@@ -468,11 +533,217 @@ fn page(
       </div>
       <nav class="site-nav" aria-label="Primary">
         <a href="/">Home</a>
+        <a href="/about/">About</a>
       </nav>
     </header>
     {body}
     <footer>Qiulin built this website using Rust.</footer>
   </main>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {{
+      const images = document.querySelectorAll('article img');
+      const overlay = document.createElement('div');
+      overlay.className = 'zoom-overlay';
+      document.body.appendChild(overlay);
+
+      images.forEach(img => {{
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', () => {{
+          if (img.classList.contains('zoomed')) {{
+            img.classList.remove('zoomed');
+            overlay.classList.remove('active');
+            img.style.transform = '';
+          }} else {{
+            const rect = img.getBoundingClientRect();
+            const x = window.innerWidth / 2 - (rect.left + rect.width / 2);
+            const y = window.innerHeight / 2 - (rect.top + rect.height / 2);
+            const scale = Math.min(window.innerWidth / rect.width, window.innerHeight / rect.height) * 0.9;
+            
+            img.classList.add('zoomed');
+            overlay.classList.add('active');
+            img.style.transform = `translate(${{x}}px, ${{y}}px) scale(${{scale}})`;
+          }}
+        }});
+      }});
+      
+      overlay.addEventListener('click', () => {{
+        const zoomedImg = document.querySelector('img.zoomed');
+        if (zoomedImg) {{
+          zoomedImg.classList.remove('zoomed');
+          zoomedImg.style.transform = '';
+        }}
+        overlay.classList.remove('active');
+      }});
+      
+      window.addEventListener('scroll', () => {{
+        const zoomedImg = document.querySelector('img.zoomed');
+        if (zoomedImg) {{
+          zoomedImg.classList.remove('zoomed');
+          zoomedImg.style.transform = '';
+          overlay.classList.remove('active');
+        }}
+      }});
+      
+      const shareBtn = document.getElementById('share-btn');
+      if (shareBtn) {{
+        shareBtn.addEventListener('click', () => {{
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const fontStack = "'Times New Roman', 'Noto Serif SC', 'Songti SC', serif";
+          const segmenter = new Intl.Segmenter(navigator.language || 'zh-CN', {{ granularity: 'word' }});
+          
+          function getLines(text, font, maxWidth) {{
+             ctx.font = font;
+             const words = Array.from(segmenter.segment(text)).map(s => s.segment);
+             let lines = [];
+             let currentLine = '';
+             for (let n = 0; n < words.length; n++) {{
+                 const testLine = currentLine + words[n];
+                 if (ctx.measureText(testLine).width > maxWidth && n > 0) {{
+                     lines.push(currentLine);
+                     currentLine = words[n];
+                 }} else {{
+                     currentLine = testLine;
+                 }}
+             }}
+             if (currentLine) lines.push(currentLine);
+             return lines;
+          }}
+
+          const title = document.querySelector('article h1').innerText;
+          const titleFont = `bold 56px ${{fontStack}}`;
+          const titleLines = getLines(title, titleFont, 600);
+          
+          const desc = document.querySelector('meta[name="description"]')?.content || '';
+          const descFont = `bold 32px ${{fontStack}}`;
+          const descLines = desc ? getLines(desc, descFont, 600) : [];
+          
+          const paragraphs = Array.from(document.querySelectorAll('article p:not(.meta)'));
+          let bodyText = paragraphs.map(p => p.innerText).join(' ').replace(/\s+/g, ' ').trim();
+          if (bodyText.length > 100) bodyText = bodyText.substring(0, 100) + '......';
+          const bodyFont = `26px ${{fontStack}}`;
+          const bodyLines = bodyText ? getLines(bodyText, bodyFont, 600) : [];
+          
+          let contentHeight = 140; 
+          contentHeight += titleLines.length * 76;
+          contentHeight += 20; 
+          
+          if (descLines.length > 0) {{
+              contentHeight += descLines.length * 48;
+              contentHeight += 40;
+          }}
+          
+          if (bodyLines.length > 0) {{
+              contentHeight += bodyLines.length * 42;
+              contentHeight += 60;
+          }}
+          
+          const footerHeight = 160;
+          const height = contentHeight + footerHeight;
+          const width = 800;
+          
+          canvas.width = width * 2;
+          canvas.height = height * 2;
+          canvas.style.width = width + 'px';
+          canvas.style.height = height + 'px';
+          ctx.scale(2, 2);
+
+          const isDark = document.documentElement.style.colorScheme === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches;
+          ctx.fillStyle = isDark ? '#1c1a17' : '#f6f1e7';
+          ctx.fillRect(0, 0, width, height);
+
+          ctx.fillStyle = isDark ? 'rgba(196, 138, 92, 0.09)' : 'rgba(121, 72, 35, 0.09)';
+          ctx.beginPath();
+          ctx.arc(0, 0, 300, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = isDark ? 'rgba(196, 138, 92, 0.06)' : 'rgba(121, 72, 35, 0.06)';
+          ctx.beginPath();
+          ctx.arc(width, 0, 400, 0, Math.PI * 2);
+          ctx.fill();
+          
+          let drawY = 140;
+          
+          ctx.fillStyle = isDark ? '#e6e0d8' : '#20242a';
+          ctx.font = titleFont;
+          for (let line of titleLines) {{
+              ctx.fillText(line, 100, drawY);
+              drawY += 76;
+          }}
+          drawY += 20;
+          
+          if (descLines.length > 0) {{
+              ctx.fillStyle = isDark ? '#c48a5c' : '#794823';
+              ctx.font = descFont;
+              for (let line of descLines) {{
+                  ctx.fillText(line, 100, drawY);
+                  drawY += 48;
+              }}
+              drawY += 40;
+          }}
+          
+          if (bodyLines.length > 0) {{
+              ctx.fillStyle = isDark ? '#a39c93' : '#66707a';
+              ctx.font = bodyFont;
+              for (let line of bodyLines) {{
+                  ctx.fillText(line, 100, drawY);
+                  drawY += 42;
+              }}
+              drawY += 60;
+          }}
+          
+          const siteName = document.querySelector('.site-brand h1').innerText;
+          const domain = window.location.hostname || 'localhost';
+          
+          ctx.fillStyle = isDark ? '#a39c93' : '#66707a';
+          ctx.fillRect(100, height - 150, 600, 2);
+
+          ctx.font = `bold 28px ${{fontStack}}`;
+          ctx.fillStyle = isDark ? '#e6e0d8' : '#20242a';
+          ctx.fillText(siteName, 100, height - 100);
+          
+          ctx.font = `italic 24px ${{fontStack}}`;
+          ctx.fillStyle = isDark ? '#a39c93' : '#66707a';
+          ctx.fillText(domain, 100, height - 60);
+
+          const dataUrl = canvas.toDataURL('image/png');
+          
+          const cardOverlay = document.createElement('div');
+          cardOverlay.className = 'zoom-overlay active';
+          cardOverlay.style.display = 'flex';
+          cardOverlay.style.flexDirection = 'column';
+          cardOverlay.style.alignItems = 'center';
+          cardOverlay.style.justifyContent = 'center';
+          
+          const imgElement = document.createElement('img');
+          imgElement.src = dataUrl;
+          imgElement.style.maxWidth = '85%';
+          imgElement.style.maxHeight = '75vh';
+          imgElement.style.borderRadius = '16px';
+          imgElement.style.boxShadow = 'var(--shadow-strong)';
+          
+          const tip = document.createElement('p');
+          tip.innerText = '长按或右键保存图片 (Long press or right click to save)';
+          tip.style.color = 'var(--text)';
+          tip.style.marginTop = '20px';
+          tip.style.background = 'var(--paper)';
+          tip.style.padding = '8px 16px';
+          tip.style.borderRadius = '8px';
+          tip.style.fontSize = '0.9rem';
+          
+          cardOverlay.appendChild(imgElement);
+          cardOverlay.appendChild(tip);
+          document.body.appendChild(cardOverlay);
+          
+          cardOverlay.addEventListener('click', (e) => {{
+              if(e.target === cardOverlay) {{
+                  cardOverlay.remove();
+              }}
+          }});
+        }});
+      }}
+    }});
+  </script>
 </body>
 </html>"#,
         title = escape_html(title),
@@ -480,6 +751,7 @@ fn page(
         site_title = escape_html(site_title),
         site_description = escape_html(site_description),
         body = body,
+        extra_head = extra_head,
     )
 }
 

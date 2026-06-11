@@ -29,6 +29,15 @@ pub fn build_site(content_root: impl AsRef<Path>, output_root: impl AsRef<Path>)
         render::render_index(&config, &posts),
     )?;
 
+    let about_path = content_root.join("about.md");
+    if about_path.exists() {
+        if let Ok(about_page) = content::load_page_file(&about_path) {
+            let about_dir = output_root.join("about");
+            fs::create_dir_all(&about_dir)?;
+            fs::write(about_dir.join("index.html"), render::render_page(&config, &about_page))?;
+        }
+    }
+
     for post in &posts {
         let post_dir = output_root.join("posts").join(&post.front_matter.slug);
         fs::create_dir_all(&post_dir)?;

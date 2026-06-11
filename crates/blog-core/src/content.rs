@@ -59,6 +59,20 @@ pub struct Post {
     pub body_html: String,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct PageFrontMatter {
+    pub title: String,
+    #[serde(default)]
+    pub description: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct Page {
+    pub front_matter: PageFrontMatter,
+    pub body_markdown: String,
+    pub body_html: String,
+}
+
 impl Post {
     pub fn title(&self) -> &str {
         &self.front_matter.title
@@ -143,6 +157,21 @@ pub fn load_post_by_slug(content_root: impl AsRef<Path>, slug: &str) -> Result<O
     }
 
     load_post_file(path).map(Some)
+}
+
+pub fn load_page_file(path: impl AsRef<Path>) -> Result<Page> {
+    let path = path.as_ref();
+    let raw = fs::read_to_string(path).with_context(|| format!("read {}", path.display()))?;
+    let (front_matter, body_markdown) = split_front_matter(&raw)?;
+    let front_matter: PageFrontMatter = toml::from_str(&front_matter)
+        .with_context(|| format!("parse front matter in {}", path.display()))?;
+    let body_html = markdown_to_html(&body_markdown);
+
+    Ok(Page {
+        front_matter,
+        body_markdown,
+        body_html,
+    })
 }
 
 pub fn save_post(content_root: impl AsRef<Path>, draft: &PostDraft) -> Result<PathBuf> {
