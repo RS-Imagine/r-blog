@@ -20,14 +20,14 @@ pub fn stylesheet() -> String {
   --accent-alpha-4: rgba(121, 72, 35, 0.22);
   --border: #dcd1c2;
   --border-soft: rgba(220, 209, 194, 0.6);
-  --code-bg: #f4efe6;
+  --code-bg: #ede5d8;
   --shadow: 0 18px 50px rgba(31, 35, 40, 0.06);
   --shadow-strong: 0 22px 70px rgba(31, 35, 40, 0.09);
   --grid-line-1: rgba(255, 255, 255, 0.18);
   --grid-line-2: rgba(255, 255, 255, 0.16);
-  --pre-bg: #1a1816;
-  --pre-text: #f7f5f2;
-  --pre-border: #2a2622;
+  --pre-bg: #faf8f5;
+  --pre-text: #2d2006;
+  --pre-border: #e6ddd0;
   --kbd-bg: #fff;
   --max-width: 980px;
 }
@@ -276,6 +276,17 @@ a:hover { color: var(--accent-strong); }
   padding: 0.15rem 0.35rem;
   border-radius: 6px;
   font-size: 0.95em;
+  border: 1px solid var(--border-soft);
+}
+.article-shell article pre code {
+  border: none;
+}
+.article-shell article pre.hljs {
+  background: var(--pre-bg);
+}
+.article-shell article pre code.hljs {
+  background: transparent;
+  padding: 0;
 }
 .article-shell article .katex,
 .article-shell article .katex-display {
@@ -572,6 +583,8 @@ fn page(
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
   {extra_head}
 </head>
 <body>
@@ -589,8 +602,10 @@ fn page(
     {body}
     <footer>Qiulin built this website using Rust.</footer>
   </main>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {{
+      if (typeof hljs !== 'undefined') {{ hljs.highlightAll(); }}
       const images = document.querySelectorAll('article img');
       const overlay = document.createElement('div');
       overlay.className = 'zoom-overlay';
