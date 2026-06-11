@@ -9,6 +9,8 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
   
 </head>
 <body>
@@ -30,8 +32,10 @@
 </article>
     <footer>Qiulin built this website using Rust.</footer>
   </main>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      if (typeof hljs !== 'undefined') { hljs.highlightAll(); }
       const images = document.querySelectorAll('article img');
       const overlay = document.createElement('div');
       overlay.className = 'zoom-overlay';
@@ -184,7 +188,7 @@
           }
           
           const siteName = document.querySelector('.site-brand h1').innerText;
-          const domain = window.location.hostname || 'localhost';
+          const domain = window.location.host + window.location.pathname;
           
           ctx.fillStyle = isDark ? '#a39c93' : '#66707a';
           ctx.fillRect(100, height - 150, 600, 2);
@@ -232,6 +236,106 @@
               }
           });
         });
+      }
+      
+      const article = document.querySelector('.article-shell article');
+      if (article) {
+        const headings = article.querySelectorAll('h2, h3, h4');
+        if (headings.length > 0) {
+          const tocContainer = document.createElement('div');
+          tocContainer.className = 'toc-container';
+          
+          const tocTitle = document.createElement('div');
+          tocTitle.className = 'toc-title';
+          tocTitle.innerText = 'Contents';
+          tocContainer.appendChild(tocTitle);
+          
+          headings.forEach((heading, index) => {
+            let id = heading.id;
+            if (!id) {
+                id = heading.innerText.replace(/[\s]+/g, '-').replace(/[^\w\u4e00-\u9fa5\-]+/g, '').toLowerCase();
+                if (!id) id = 'heading-' + index;
+                heading.id = id;
+            }
+            
+            const link = document.createElement('a');
+            link.href = '#' + id;
+            link.className = 'toc-link toc-level-' + heading.tagName.charAt(1);
+            link.innerText = heading.innerText;
+            tocContainer.appendChild(link);
+          });
+          
+          document.body.appendChild(tocContainer);
+
+          // Highlight active TOC entry on scroll
+          const tocLinks = tocContainer.querySelectorAll('.toc-link');
+          const headingEls = Array.from(headings);
+
+          function setActive(id) {
+            tocLinks.forEach(l => {
+              if (l.getAttribute('href') === '#' + id) {
+                l.classList.add('toc-active');
+                // Scroll the TOC so the active item stays visible
+                const containerRect = tocContainer.getBoundingClientRect();
+                const linkRect = l.getBoundingClientRect();
+                if (linkRect.top < containerRect.top + 20) {
+                  tocContainer.scrollTop -= (containerRect.top + 20 - linkRect.top);
+                } else if (linkRect.bottom > containerRect.bottom - 20) {
+                  tocContainer.scrollTop += (linkRect.bottom - containerRect.bottom + 20);
+                }
+              } else {
+                l.classList.remove('toc-active');
+              }
+            });
+          }
+
+          const observer = new IntersectionObserver(
+            (entries) => {
+              // Find the topmost heading that is intersecting or has passed
+              let best = null;
+              let bestTop = Infinity;
+              entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                  const top = entry.boundingClientRect.top;
+                  if (top < bestTop) {
+                    bestTop = top;
+                    best = entry.target;
+                  }
+                }
+              });
+              if (best) {
+                setActive(best.id);
+              }
+            },
+            {
+              rootMargin: '0px 0px -60% 0px',
+              threshold: 0,
+            }
+          );
+
+          headingEls.forEach(h => observer.observe(h));
+
+          // Fallback: on scroll, find the heading closest to viewport top
+          let ticking = false;
+          window.addEventListener('scroll', () => {
+            if (!ticking) {
+              requestAnimationFrame(() => {
+                const scrollY = window.scrollY + 100;
+                let active = headingEls[0];
+                for (const h of headingEls) {
+                  if (h.offsetTop <= scrollY) active = h;
+                  else break;
+                }
+                if (active) setActive(active.id);
+                ticking = false;
+              });
+              ticking = true;
+            }
+          });
+
+          // Set initial active on load
+          if (headingEls[0]) setActive(headingEls[0].id);
+        }
       }
     });
   </script>
