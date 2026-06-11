@@ -334,3 +334,24 @@ footer {
   .site-nav { justify-content: flex-start; }
   .hero h1, article h1 { letter-spacing: -0.01em; }
 }
+.zoom-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--bg);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+  z-index: 100;
+}
+.zoom-overlay.active {
+  opacity: 0.95;
+  visibility: visible;
+}
+article img {
+  transition: transform 0.3s ease;
+  position: relative;
+}
+article img.zoomed {
+  z-index: 101;
+  cursor: zoom-out !important;
+}
