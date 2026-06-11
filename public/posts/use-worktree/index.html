@@ -3,15 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="That is where the heart longs to be! (心之所向)">
-  <title>Qiulin&#39;s Blog</title>
+  <meta name="description" content="如果习惯使用 Git 来管理代码仓库，多个分支的维护还是挺麻烦的。">
+  <title> Git Worktree 解决多分支管理痛点</title>
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
-  
+  <meta property="og:title" content=" Git Worktree 解决多分支管理痛点">
+<meta property="og:description" content="如果习惯使用 Git 来管理代码仓库，多个分支的维护还是挺麻烦的。">
+<meta property="og:type" content="article">
 </head>
 <body>
   <main class="wrapper">
@@ -25,26 +27,112 @@
         <a href="/about/">About</a>
       </nav>
     </header>
-    <section class="hero">
-  <span class="tag">Qiulin</span>
-  <h1>Just Do It</h1>
-  <p>I&#39;ll write whatever I want to write.</p>
-</section>
-<section class="grid">
-  <article class="post-card">
+    <section class="article-shell">
+  <a class="back-link" href="/">&larr; Back to posts</a>
+  <article>
   <div class="meta">2026-06-12</div>
-  <h2><a href="/posts/use-worktree/"> Git Worktree 解决多分支管理痛点</a></h2>
-  <p>如果习惯使用 Git 来管理代码仓库，多个分支的维护还是挺麻烦的。</p>
-</article><article class="post-card">
-  <div class="meta">2026-06-11 (Updated: 2026-06-11)</div>
-  <h2><a href="/posts/git-learning/">Git 学习手册</a></h2>
-  <p>Git 是先进的分布式版本控制系统，掌握 Git 是必备技能。</p>
-</article><article class="post-card">
-  <div class="meta">2026-06-11</div>
-  <h2><a href="/posts/1post/">一亩三分地</a></h2>
-  <p>写我想写的任何事情</p>
-</article>
-</section>
+  <h1> Git Worktree 解决多分支管理痛点</h1>
+  <p class="meta">如果习惯使用 Git 来管理代码仓库，多个分支的维护还是挺麻烦的。</p>
+  <div><p>我的博客仓库主要有两个分支：</p>
+<ul>
+<li><code>master</code> 分支：用于维护博客框架。为了方便测试，我经常会在这里随便生成一些测试用的 <code>content/</code> 和 <code>public/</code> 目录，并在 <code>.gitignore</code> 中将它们忽略。</li>
+<li><code>forimagine</code> 分支（个人分支）：用于存放真正发布的博文内容。</li>
+</ul>
+<p><strong>灾难发生在切换分支时：</strong>
+当我在 <code>master</code> 分支做完功能测试，满地都是乱七八糟的测试产物，此时执行 <code>git switch forimagine</code> 准备写几篇真正的博客时，Git 会将 <code>master</code> 分支下那些<strong>被忽略或未跟踪</strong>的 <code>content/</code> 和 <code>public/</code> 目录留在原地。它们要么会导致文件冲突报错，要么直接污染了我 <code>forimagine</code> 的分支。</p>
+<p>为了解决这个问题，之前我只能选择来回 <code>git stash</code>，甚至重新 <code>git clone</code> 一个仓库。</p>
+<p>但其实，Git 早在 2.5 版本就引入了一个适合这一需求的功能——<strong><code>git worktree</code></strong>。</p>
+<hr />
+<h2>什么是 Git Worktree？</h2>
+<p>在传统的认知中，<strong>一个本地文件夹只能对应一个 Git 分支状态</strong>。想看另一个分支的代码，就必须在同一个文件夹里切来切去。</p>
+<p>而 <code>git worktree</code> 的核心理念是：<strong>“多个物理文件夹，共享同一个底层的 Git 数据库”</strong>。</p>
+<p>通过它，可以把仓库的另外一个分支“外包”到一个完全独立的物理文件夹中去。这两个文件夹在电脑硬盘上是物理隔离的，各自拥有独立的工作区；但在底层，它们共享着同一个 <code>.git</code> 历史记录。在 A 文件夹提交了代码，B 文件夹立刻就能感知到。</p>
+<hr />
+<h2>实战演练：搭建“双开”工作流</h2>
+<p>下面以我的 <code>r-blog</code> 博客项目为例，一步步搭建双目录工作流。</p>
+<h3>1. 整理目录结构</h3>
+<p>为了方便管理，我先在电脑里建一个统一的父级文件夹，比如叫 <code>MyBlogSpace</code>。然后将主仓库放在里面：</p>
+<pre><code class="language-text">MyBlogSpace/
+└── r-blog/          &lt;-- 主仓库（当前在 master 分支）
+</code></pre>
+<h3>2. 创建 Worktree 外挂目录</h3>
+<p>打开终端，进入 <code>r-blog</code> 主仓库，执行以下命令，将用于写文章的 <code>forimagine</code> 分支挂载到旁边的一个新文件夹中：</p>
+<pre><code class="language-bash">cd MyBlogSpace/r-blog
+# 语法：git worktree add &lt;新文件夹路径&gt; &lt;分支名&gt;
+git worktree add ../forimagine-r-blog forimagine
+</code></pre>
+<h3>3. 新的代码目录结构</h3>
+<p>现在，打开 <code>MyBlogSpace</code> 文件夹，会发现多了一个 <code>r-blog-personal</code> 目录，其内部结构：</p>
+<pre><code class="language-text">MyBlogSpace/
+├── r-blog/                       &lt;-- 【主仓库】永远固定在 master 分支
+│   ├── .git/                     &lt;-- 真正的 Git 数据库（超大文件夹）
+│   ├── content/                  &lt;-- master专用的测试内容（随便造，不怕混乱）
+│   └── public/                   &lt;-- master专用的测试产物
+│
+└── r-blog-personal/              &lt;-- 【Worktree 仓库】永远固定在 forimagine 分支
+    ├── .git                      &lt;-- 注意！它只是个文本文件，指向主仓库的 .git
+    ├── content/                  &lt;-- 我真实的博文内容（安全纯净）
+    └── public/                   &lt;-- 我真实的线上构建产物
+</code></pre>
+<ul>
+<li>想改博客主题或者实现新功能？打开 <code>r-blog</code> 文件夹随便折腾。</li>
+<li>想写新文章？打开 <code>r-blog-personal</code> 文件夹安心码字。
+两边的构建产物互不干扰，世界彻底清静了。</li>
+</ul>
+<hr />
+<h2>Worktree 的日常管理</h2>
+<h3>1. 查看当前的 Worktree 列表</h3>
+<p>在任意一个关联目录中，运行以下命令可以查看当前仓库挂载了哪些目录：</p>
+<pre><code class="language-bash">git worktree list
+</code></pre>
+<p><em>输出示例：</em></p>
+<p><code>/path/to/MyBlogSpace/r-blog               1a2b3c4 [master]</code></p>
+<p><code>/path/to/MyBlogSpace/forimagine-r-blog    5d6e7f8 [forimagine]</code></p>
+<h3>2. 重命名或移动目录</h3>
+<p><strong>⚠️ 警告：不要直接在操作系统的文件管理器里去改 Worktree 文件夹的名字或移动它们！</strong>
+因为它们底层是通过绝对路径绑定的，直接改名会导致 Git 找不到路径。</p>
+<p>如果需要重命名，请使用 Git 原生命令（需 Git 2.17+）：</p>
+<pre><code class="language-bash"># 语法：git worktree move &lt;旧路径&gt; &lt;新路径&gt;
+git worktree move ../forimagine-r-blog ../new-name-r-blog
+</code></pre>
+<p><strong>如果已经用系统把文件夹移走了怎么办？</strong>
+Git 提供了修复命令，只需在终端进入<strong>主仓库</strong>的目录，告诉主仓库小弟去哪了：</p>
+<pre><code class="language-bash"># 语法：git worktree repair &lt;外挂仓库移动后的新路径&gt;
+git worktree repair ../new-name-r-blog
+</code></pre>
+<p>Git 会自动顺藤摸瓜，把两边断掉的链接全部重新接上。</p>
+<h3>3. 不想用了如何删除？</h3>
+<p>如果某个分支的开发任务结束了，想删掉外挂的文件夹，同样<strong>不建议</strong>直接暴力 <code>rm -rf</code>。正确的卸载方式是：</p>
+<pre><code class="language-bash"># 在主仓库下执行
+git worktree remove ../forimagine-r-blog
+</code></pre>
+<p>放心，这仅仅会删掉那个外挂文件夹，代码和分支依然完好无损地保存在主仓库的 Git 数据库里。</p>
+<hr />
+<h2>💡 终极体验：搭配 VS Code 工作区</h2>
+<p>既然我们已经把主仓库和 Worktree 仓库都放在了 <code>MyBlogSpace</code> 目录下，那么最爽的开发姿势是什么呢？</p>
+<p>直接用 VS Code 打开 <strong><code>MyBlogSpace</code> 父级目录</strong>！</p>
+<p>这样，VS Code 的侧边栏会同时并排显示两个仓库。我们就可以做到：</p>
+<ol>
+<li>左边开着主仓库的 CSS 文件修改主题样式。</li>
+<li>右边开着外挂仓库的 Markdown 写文章。</li>
+<li>底部开两个 Terminal，一边跑着主题的测试服务，一边跑着真实内容的构建服务。</li>
+</ol>
+<p><img src="/images/worktree.jpg" alt="worktree.jpg" /></p>
+<h2>总结</h2>
+<p><code>git worktree</code> 完美解决了同一仓库下多分支状态差异巨大的痛点。它极其适合 <strong>“正在开发新需求，突然要切回老版本修复紧急 Bug”</strong> 的传统开发场景。</p>
+<blockquote class="markdown-alert-note">
+<p>The content is mainly generated by AI.</p>
+</blockquote>
+</div>
+  <div class="share-container" style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-soft);">
+    <button id="share-btn" style="background: var(--accent); color: var(--bg); border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+      </svg>
+      Share
+    </button>
+  </div>
+</article></section>
     <footer>Qiulin built this website using Rust.</footer>
   </main>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
