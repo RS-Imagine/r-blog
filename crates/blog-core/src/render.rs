@@ -119,10 +119,11 @@ a:hover { color: var(--accent-strong); }
 .site-header {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
-  padding: 18px 0 24px;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0 14px;
   border-bottom: 1px solid var(--border-soft);
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 .site-brand {
   display: grid;
@@ -358,6 +359,55 @@ article img {
 article img.zoomed {
   z-index: 101;
   cursor: zoom-out !important;
+}
+.toc-container {
+  position: fixed;
+  left: max(12px, calc(50vw - var(--max-width) / 2 - 230px));
+  top: 90px;
+  width: 210px;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  font-size: 0.85rem;
+  padding: 16px 12px 16px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-soft) transparent;
+}
+.toc-container::-webkit-scrollbar { width: 3px; }
+.toc-container::-webkit-scrollbar-thumb { background: var(--border-soft); border-radius: 3px; }
+.toc-title {
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+.toc-link {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 6px;
+  line-height: 1.45;
+  padding: 2px 0 2px 8px;
+  border-left: 2px solid transparent;
+  transition: color 0.18s, border-color 0.18s, padding-left 0.18s;
+  font-size: 0.83rem;
+}
+.toc-link:hover {
+  color: var(--accent);
+  border-left-color: var(--accent-alpha-3);
+}
+.toc-link.toc-active {
+  color: var(--accent);
+  font-weight: 600;
+  border-left-color: var(--accent);
+  padding-left: 10px;
+}
+.toc-level-2 { margin-left: 0; }
+.toc-level-3 { margin-left: 10px; font-size: 0.80rem; }
+.toc-level-4 { margin-left: 20px; font-size: 0.78rem; }
+@media (max-width: 1300px) {
+  .toc-container { display: none; }
 }
 "#,
     )
@@ -693,7 +743,7 @@ fn page(
           }}
           
           const siteName = document.querySelector('.site-brand h1').innerText;
-          const domain = window.location.hostname || 'localhost';
+          const domain = window.location.host + window.location.pathname;
           
           ctx.fillStyle = isDark ? '#a39c93' : '#66707a';
           ctx.fillRect(100, height - 150, 600, 2);
@@ -741,6 +791,106 @@ fn page(
               }}
           }});
         }});
+      }}
+      
+      const article = document.querySelector('.article-shell article');
+      if (article) {{
+        const headings = article.querySelectorAll('h2, h3, h4');
+        if (headings.length > 0) {{
+          const tocContainer = document.createElement('div');
+          tocContainer.className = 'toc-container';
+          
+          const tocTitle = document.createElement('div');
+          tocTitle.className = 'toc-title';
+          tocTitle.innerText = 'Contents';
+          tocContainer.appendChild(tocTitle);
+          
+          headings.forEach((heading, index) => {{
+            let id = heading.id;
+            if (!id) {{
+                id = heading.innerText.replace(/[\s]+/g, '-').replace(/[^\w\u4e00-\u9fa5\-]+/g, '').toLowerCase();
+                if (!id) id = 'heading-' + index;
+                heading.id = id;
+            }}
+            
+            const link = document.createElement('a');
+            link.href = '#' + id;
+            link.className = 'toc-link toc-level-' + heading.tagName.charAt(1);
+            link.innerText = heading.innerText;
+            tocContainer.appendChild(link);
+          }});
+          
+          document.body.appendChild(tocContainer);
+
+          // Highlight active TOC entry on scroll
+          const tocLinks = tocContainer.querySelectorAll('.toc-link');
+          const headingEls = Array.from(headings);
+
+          function setActive(id) {{
+            tocLinks.forEach(l => {{
+              if (l.getAttribute('href') === '#' + id) {{
+                l.classList.add('toc-active');
+                // Scroll the TOC so the active item stays visible
+                const containerRect = tocContainer.getBoundingClientRect();
+                const linkRect = l.getBoundingClientRect();
+                if (linkRect.top < containerRect.top + 20) {{
+                  tocContainer.scrollTop -= (containerRect.top + 20 - linkRect.top);
+                }} else if (linkRect.bottom > containerRect.bottom - 20) {{
+                  tocContainer.scrollTop += (linkRect.bottom - containerRect.bottom + 20);
+                }}
+              }} else {{
+                l.classList.remove('toc-active');
+              }}
+            }});
+          }}
+
+          const observer = new IntersectionObserver(
+            (entries) => {{
+              // Find the topmost heading that is intersecting or has passed
+              let best = null;
+              let bestTop = Infinity;
+              entries.forEach(entry => {{
+                if (entry.isIntersecting) {{
+                  const top = entry.boundingClientRect.top;
+                  if (top < bestTop) {{
+                    bestTop = top;
+                    best = entry.target;
+                  }}
+                }}
+              }});
+              if (best) {{
+                setActive(best.id);
+              }}
+            }},
+            {{
+              rootMargin: '0px 0px -60% 0px',
+              threshold: 0,
+            }}
+          );
+
+          headingEls.forEach(h => observer.observe(h));
+
+          // Fallback: on scroll, find the heading closest to viewport top
+          let ticking = false;
+          window.addEventListener('scroll', () => {{
+            if (!ticking) {{
+              requestAnimationFrame(() => {{
+                const scrollY = window.scrollY + 100;
+                let active = headingEls[0];
+                for (const h of headingEls) {{
+                  if (h.offsetTop <= scrollY) active = h;
+                  else break;
+                }}
+                if (active) setActive(active.id);
+                ticking = false;
+              }});
+              ticking = true;
+            }}
+          }});
+
+          // Set initial active on load
+          if (headingEls[0]) setActive(headingEls[0].id);
+        }}
       }}
     }});
   </script>
