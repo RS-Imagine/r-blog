@@ -5,20 +5,61 @@ pub fn stylesheet() -> String {
         r#":root {
   color-scheme: light;
   --bg: #f6f1e7;
+  --bg-top: #fbf8f2;
   --paper: rgba(255, 253, 248, 0.92);
   --paper-solid: #fffdf8;
   --paper-strong: #fffaf1;
   --text: #20242a;
   --muted: #66707a;
-  --accent: #0f766e;
-  --accent-strong: #115e59;
-  --accent-soft: rgba(15, 118, 110, 0.1);
+  --accent: #794823;
+  --accent-strong: #5c3518;
+  --accent-soft: rgba(121, 72, 35, 0.1);
+  --accent-alpha-1: rgba(121, 72, 35, 0.09);
+  --accent-alpha-2: rgba(121, 72, 35, 0.06);
+  --accent-alpha-3: rgba(121, 72, 35, 0.18);
+  --accent-alpha-4: rgba(121, 72, 35, 0.22);
   --border: #dcd1c2;
   --border-soft: rgba(220, 209, 194, 0.6);
   --code-bg: #f4efe6;
   --shadow: 0 18px 50px rgba(31, 35, 40, 0.06);
   --shadow-strong: 0 22px 70px rgba(31, 35, 40, 0.09);
+  --grid-line-1: rgba(255, 255, 255, 0.18);
+  --grid-line-2: rgba(255, 255, 255, 0.16);
+  --pre-bg: #1a1816;
+  --pre-text: #f7f5f2;
+  --pre-border: #2a2622;
+  --kbd-bg: #fff;
   --max-width: 980px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #1c1a17;
+    --bg-top: #24221e;
+    --paper: rgba(30, 28, 25, 0.92);
+    --paper-solid: #1e1c19;
+    --paper-strong: #262420;
+    --text: #e6e0d8;
+    --muted: #a39c93;
+    --accent: #c48a5c;
+    --accent-strong: #d9a073;
+    --accent-soft: rgba(196, 138, 92, 0.15);
+    --accent-alpha-1: rgba(196, 138, 92, 0.09);
+    --accent-alpha-2: rgba(196, 138, 92, 0.06);
+    --accent-alpha-3: rgba(196, 138, 92, 0.18);
+    --accent-alpha-4: rgba(196, 138, 92, 0.22);
+    --border: #3d3832;
+    --border-soft: rgba(61, 56, 50, 0.6);
+    --code-bg: #262420;
+    --shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+    --shadow-strong: 0 22px 70px rgba(0, 0, 0, 0.4);
+    --grid-line-1: rgba(255, 255, 255, 0.04);
+    --grid-line-2: rgba(255, 255, 255, 0.03);
+    --pre-bg: #151311;
+    --pre-text: #e6e0d8;
+    --pre-border: #262420;
+    --kbd-bg: #262420;
+  }
 }
 * { box-sizing: border-box; }
 html {
@@ -38,9 +79,9 @@ body {
     'Times New Roman',
     serif;
   background:
-    radial-gradient(circle at top left, rgba(15, 118, 110, 0.09), transparent 24%),
-    radial-gradient(circle at top right, rgba(17, 94, 89, 0.06), transparent 28%),
-    linear-gradient(180deg, #fbf8f2 0%, var(--bg) 100%);
+    radial-gradient(circle at top left, var(--accent-alpha-1), transparent 24%),
+    radial-gradient(circle at top right, var(--accent-alpha-2), transparent 28%),
+    linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 100%);
   color: var(--text);
   line-height: 1.85;
   font-size: 18px;
@@ -53,14 +94,14 @@ body::before {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px);
+    linear-gradient(var(--grid-line-1) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-2) 1px, transparent 1px);
   background-size: 72px 72px;
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.16), transparent 35%);
   opacity: 0.22;
 }
 ::selection {
-  background: rgba(15, 118, 110, 0.18);
+  background: var(--accent-alpha-3);
   color: var(--text);
 }
 a {
@@ -132,7 +173,7 @@ a:hover { color: var(--accent-strong); }
   transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease;
 }
 .post-card:hover {
-  border-bottom-color: rgba(15, 118, 110, 0.22);
+  border-bottom-color: var(--accent-alpha-4);
   transform: translateY(-1px);
 }
 .post-card:last-child { border-bottom: 0; }
@@ -218,9 +259,9 @@ a:hover { color: var(--accent-strong); }
   overflow-x: auto;
   padding: 18px 20px;
   border-radius: 18px;
-  background: #191c22;
-  color: #f7f7f2;
-  border: 1px solid #272c34;
+  background: var(--pre-bg);
+  color: var(--pre-text);
+  border: 1px solid var(--pre-border);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
 .article-shell article pre code {
@@ -252,7 +293,7 @@ a:hover { color: var(--accent-strong); }
   padding: 0.14rem 0.42rem;
   border-radius: 6px;
   border: 1px solid var(--border);
-  background: #fff;
+  background: var(--kbd-bg);
   font-size: 0.88em;
 }
 .article-shell article table {
@@ -269,7 +310,7 @@ a:hover { color: var(--accent-strong); }
   vertical-align: top;
 }
 .article-shell article thead th {
-  background: rgba(15, 118, 110, 0.06);
+  background: var(--accent-alpha-2);
   color: var(--accent-strong);
 }
 footer {
