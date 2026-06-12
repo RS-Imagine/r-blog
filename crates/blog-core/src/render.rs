@@ -417,8 +417,49 @@ article img.zoomed {
 .toc-level-2 { margin-left: 0; }
 .toc-level-3 { margin-left: 10px; font-size: 0.80rem; }
 .toc-level-4 { margin-left: 20px; font-size: 0.78rem; }
+.mobile-toc-btn { display: none; }
 @media (max-width: 1300px) {
-  .toc-container { display: none; }
+  .toc-container {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 70vh;
+    background: var(--paper-solid);
+    z-index: 1000;
+    padding: 24px 20px calc(24px + env(safe-area-inset-bottom)) 20px;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    box-shadow: var(--shadow-strong);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .toc-container.drawer-open {
+    transform: translateY(0);
+  }
+  .mobile-toc-btn {
+    display: flex;
+    position: fixed;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    right: 24px;
+    width: 52px;
+    height: 52px;
+    border-radius: 26px;
+    background: var(--accent);
+    color: var(--bg);
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-strong);
+    z-index: 999;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s;
+  }
+  .mobile-toc-btn:active {
+    transform: scale(0.95);
+  }
 }
 "#,
     )
@@ -499,7 +540,8 @@ pub fn render_post(config: &SiteConfig, post: &Post) -> String {
   <h1>{title}</h1>
   <p class="meta">{description}</p>
   <div>{body}</div>
-  <div class="share-container" style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-soft);">
+  <div class="share-container" style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center;">
+    <a class="back-link" href="/">&larr; Back to posts</a>
     <button id="share-btn" style="background: var(--accent); color: var(--bg); border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
         <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
@@ -837,8 +879,36 @@ fn page(
           
           document.body.appendChild(tocContainer);
 
+          // Mobile TOC Button & Drawer Logic
+          const mobileTocBtn = document.createElement('button');
+          mobileTocBtn.className = 'mobile-toc-btn';
+          mobileTocBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/></svg>';
+          document.body.appendChild(mobileTocBtn);
+
+          const tocDrawerOverlay = document.createElement('div');
+          tocDrawerOverlay.className = 'zoom-overlay';
+          tocDrawerOverlay.style.zIndex = '998';
+          document.body.appendChild(tocDrawerOverlay);
+
+          function closeTocDrawer() {{
+             tocContainer.classList.remove('drawer-open');
+             tocDrawerOverlay.classList.remove('active');
+          }}
+
+          mobileTocBtn.addEventListener('click', () => {{
+            if (tocContainer.classList.contains('drawer-open')) {{
+              closeTocDrawer();
+            }} else {{
+              tocContainer.classList.add('drawer-open');
+              tocDrawerOverlay.classList.add('active');
+            }}
+          }});
+
+          tocDrawerOverlay.addEventListener('click', closeTocDrawer);
+
           // Highlight active TOC entry on scroll
           const tocLinks = tocContainer.querySelectorAll('.toc-link');
+          tocLinks.forEach(l => l.addEventListener('click', closeTocDrawer));
           const headingEls = Array.from(headings);
 
           function setActive(id) {{
