@@ -1,3 +1,5 @@
+.github/
+content/
 target/
 .DS_Store
 Thumbs.db

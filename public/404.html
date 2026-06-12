@@ -267,8 +267,36 @@
           
           document.body.appendChild(tocContainer);
 
+          // Mobile TOC Button & Drawer Logic
+          const mobileTocBtn = document.createElement('button');
+          mobileTocBtn.className = 'mobile-toc-btn';
+          mobileTocBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/></svg>';
+          document.body.appendChild(mobileTocBtn);
+
+          const tocDrawerOverlay = document.createElement('div');
+          tocDrawerOverlay.className = 'zoom-overlay';
+          tocDrawerOverlay.style.zIndex = '998';
+          document.body.appendChild(tocDrawerOverlay);
+
+          function closeTocDrawer() {
+             tocContainer.classList.remove('drawer-open');
+             tocDrawerOverlay.classList.remove('active');
+          }
+
+          mobileTocBtn.addEventListener('click', () => {
+            if (tocContainer.classList.contains('drawer-open')) {
+              closeTocDrawer();
+            } else {
+              tocContainer.classList.add('drawer-open');
+              tocDrawerOverlay.classList.add('active');
+            }
+          });
+
+          tocDrawerOverlay.addEventListener('click', closeTocDrawer);
+
           // Highlight active TOC entry on scroll
           const tocLinks = tocContainer.querySelectorAll('.toc-link');
+          tocLinks.forEach(l => l.addEventListener('click', closeTocDrawer));
           const headingEls = Array.from(headings);
 
           function setActive(id) {
