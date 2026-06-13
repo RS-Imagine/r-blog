@@ -45,6 +45,21 @@ pub fn build_site(content_root: impl AsRef<Path>, output_root: impl AsRef<Path>)
     }
 
     fs::write(output_root.join("404.html"), render::render_404(&config))?;
+    let search_index: Vec<_> = posts
+        .iter()
+        .filter(|p| !p.draft())
+        .map(|p| {
+            serde_json::json!({
+                "title": p.title(),
+                "slug": p.slug(),
+                "description": p.description(),
+                "body": p.body_markdown,
+            })
+        })
+        .collect();
+    let search_index_json = serde_json::to_string(&search_index)?;
+    fs::write(output_root.join("search_index.json"), search_index_json)?;
+
     Ok(())
 }
 
