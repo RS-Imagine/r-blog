@@ -461,6 +461,104 @@ article img.zoomed {
     transform: scale(0.95);
   }
 }
+.search-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: inherit;
+  padding: 0;
+  font-family: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition: color 0.2s;
+}
+.search-btn:hover {
+  color: var(--accent-strong);
+}
+.search-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 10vh;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+.search-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+.search-content {
+  background: var(--paper-solid);
+  width: 90%;
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-strong);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+}
+.search-input-wrapper {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.search-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  color: var(--text);
+  outline: none;
+  font-family: inherit;
+}
+.search-input::placeholder {
+  color: var(--muted);
+}
+.search-results {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.search-result-item {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-soft);
+  text-decoration: none;
+  display: block;
+}
+.search-result-item:last-child {
+  border-bottom: none;
+}
+.search-result-item:hover, .search-result-item.selected {
+  background: var(--accent-alpha-1);
+}
+.search-result-title {
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+.search-result-excerpt {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.search-result-excerpt mark {
+  background: var(--accent-alpha-3);
+  color: var(--text);
+  padding: 0 2px;
+  border-radius: 2px;
+}
 "#,
     )
 }
@@ -638,16 +736,116 @@ fn page(
       </div>
       <nav class="site-nav" aria-label="Primary">
         <a href="/">Home</a>
+        <button id="site-search-btn" class="search-btn" aria-label="Search">Search</button>
         <a href="/about/">About</a>
       </nav>
     </header>
     {body}
     <footer>Qiulin built this website using Rust.</footer>
   </main>
+  <div id="search-modal" class="search-modal">
+    <div class="search-content">
+      <div class="search-input-wrapper">
+        <input type="text" id="search-input" class="search-input" placeholder="Search posts..." autocomplete="off">
+      </div>
+      <ul id="search-results" class="search-results"></ul>
+    </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {{
       if (typeof hljs !== 'undefined') {{ hljs.highlightAll(); }}
+      
+      const searchBtn = document.getElementById('site-search-btn');
+      const searchModal = document.getElementById('search-modal');
+      const searchInput = document.getElementById('search-input');
+      const searchResults = document.getElementById('search-results');
+      let searchIndex = null;
+
+      if (searchBtn && searchModal) {{
+        const closeSearch = () => {{
+          searchModal.classList.remove('active');
+          searchInput.blur();
+        }};
+
+        const openSearch = async () => {{
+          searchModal.classList.add('active');
+          searchInput.focus();
+          
+          if (!searchIndex) {{
+            try {{
+              const res = await fetch('/search_index.json');
+              searchIndex = await res.json();
+            }} catch (e) {{
+              console.error('Failed to load search index:', e);
+            }}
+          }}
+        }};
+
+        searchBtn.addEventListener('click', openSearch);
+        
+        searchModal.addEventListener('click', (e) => {{
+          if (e.target === searchModal) closeSearch();
+        }});
+        
+        document.addEventListener('keydown', (e) => {{
+          if (e.key === 'Escape' && searchModal.classList.contains('active')) {{
+            closeSearch();
+          }}
+        }});
+
+        searchInput.addEventListener('input', (e) => {{
+          const query = e.target.value.trim().toLowerCase();
+          searchResults.innerHTML = '';
+          
+          if (!query || !searchIndex) return;
+          
+          const results = searchIndex.filter(post => 
+            post.title.toLowerCase().includes(query) ||
+            post.description.toLowerCase().includes(query) ||
+            post.body.toLowerCase().includes(query)
+          ).slice(0, 10);
+          
+          if (results.length === 0) {{
+            searchResults.innerHTML = '<li style="padding: 16px 20px; color: var(--muted);">No results found.</li>';
+            return;
+          }}
+          
+          results.forEach(post => {{
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.className = 'search-result-item';
+            a.href = `/posts/${{post.slug}}/`;
+            
+            const title = document.createElement('div');
+            title.className = 'search-result-title';
+            title.textContent = post.title;
+            
+            let excerptText = post.description;
+            const bodyLower = post.body.toLowerCase();
+            const matchIndex = bodyLower.indexOf(query);
+            
+            if (matchIndex !== -1 && !post.description.toLowerCase().includes(query) && !post.title.toLowerCase().includes(query)) {{
+              const start = Math.max(0, matchIndex - 40);
+              const end = Math.min(post.body.length, matchIndex + query.length + 40);
+              excerptText = (start > 0 ? '...' : '') + post.body.substring(start, end) + (end < post.body.length ? '...' : '');
+            }}
+            
+            const excerpt = document.createElement('div');
+            excerpt.className = 'search-result-excerpt';
+            
+            // Highlight query
+            const regex = new RegExp(`(${{query.replace(/[.*+?^${{}}()|[\\]\\\\]/g, '\\\\$&')}})`, 'gi');
+            excerpt.innerHTML = excerptText.replace(regex, '<mark>$1</mark>');
+            title.innerHTML = post.title.replace(regex, '<mark>$1</mark>');
+            
+            a.appendChild(title);
+            a.appendChild(excerpt);
+            li.appendChild(a);
+            searchResults.appendChild(li);
+          }});
+        }});
+      }}
       const images = document.querySelectorAll('article img');
       const overlay = document.createElement('div');
       overlay.className = 'zoom-overlay';
