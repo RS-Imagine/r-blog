@@ -24,6 +24,7 @@
       </div>
       <nav class="site-nav" aria-label="Primary">
         <a href="/">Home</a>
+        <button id="site-search-btn" class="search-btn" aria-label="Search">Search</button>
         <a href="/about/">About</a>
       </nav>
     </header>
@@ -38,10 +39,109 @@
 </article></section>
     <footer>Qiulin built this website using Rust.</footer>
   </main>
+  <div id="search-modal" class="search-modal">
+    <div class="search-content">
+      <div class="search-input-wrapper">
+        <input type="text" id="search-input" class="search-input" placeholder="Search posts..." autocomplete="off">
+      </div>
+      <ul id="search-results" class="search-results"></ul>
+    </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       if (typeof hljs !== 'undefined') { hljs.highlightAll(); }
+      
+      const searchBtn = document.getElementById('site-search-btn');
+      const searchModal = document.getElementById('search-modal');
+      const searchInput = document.getElementById('search-input');
+      const searchResults = document.getElementById('search-results');
+      let searchIndex = null;
+
+      if (searchBtn && searchModal) {
+        const closeSearch = () => {
+          searchModal.classList.remove('active');
+          searchInput.blur();
+        };
+
+        const openSearch = async () => {
+          searchModal.classList.add('active');
+          searchInput.focus();
+          
+          if (!searchIndex) {
+            try {
+              const res = await fetch('/search_index.json');
+              searchIndex = await res.json();
+            } catch (e) {
+              console.error('Failed to load search index:', e);
+            }
+          }
+        };
+
+        searchBtn.addEventListener('click', openSearch);
+        
+        searchModal.addEventListener('click', (e) => {
+          if (e.target === searchModal) closeSearch();
+        });
+        
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && searchModal.classList.contains('active')) {
+            closeSearch();
+          }
+        });
+
+        searchInput.addEventListener('input', (e) => {
+          const query = e.target.value.trim().toLowerCase();
+          searchResults.innerHTML = '';
+          
+          if (!query || !searchIndex) return;
+          
+          const results = searchIndex.filter(post => 
+            post.title.toLowerCase().includes(query) ||
+            post.description.toLowerCase().includes(query) ||
+            post.body.toLowerCase().includes(query)
+          ).slice(0, 10);
+          
+          if (results.length === 0) {
+            searchResults.innerHTML = '<li style="padding: 16px 20px; color: var(--muted);">No results found.</li>';
+            return;
+          }
+          
+          results.forEach(post => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.className = 'search-result-item';
+            a.href = `/posts/${post.slug}/`;
+            
+            const title = document.createElement('div');
+            title.className = 'search-result-title';
+            title.textContent = post.title;
+            
+            let excerptText = post.description;
+            const bodyLower = post.body.toLowerCase();
+            const matchIndex = bodyLower.indexOf(query);
+            
+            if (matchIndex !== -1 && !post.description.toLowerCase().includes(query) && !post.title.toLowerCase().includes(query)) {
+              const start = Math.max(0, matchIndex - 40);
+              const end = Math.min(post.body.length, matchIndex + query.length + 40);
+              excerptText = (start > 0 ? '...' : '') + post.body.substring(start, end) + (end < post.body.length ? '...' : '');
+            }
+            
+            const excerpt = document.createElement('div');
+            excerpt.className = 'search-result-excerpt';
+            
+            // Highlight query
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')})`, 'gi');
+            excerpt.innerHTML = excerptText.replace(regex, '<mark>$1</mark>');
+            title.innerHTML = post.title.replace(regex, '<mark>$1</mark>');
+            
+            a.appendChild(title);
+            a.appendChild(excerpt);
+            li.appendChild(a);
+            searchResults.appendChild(li);
+          });
+        });
+      }
       const images = document.querySelectorAll('article img');
       const overlay = document.createElement('div');
       overlay.className = 'zoom-overlay';
