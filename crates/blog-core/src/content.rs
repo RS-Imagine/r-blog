@@ -57,6 +57,7 @@ pub struct Post {
     pub front_matter: FrontMatter,
     pub body_markdown: String,
     pub body_html: String,
+    pub body_plain_text: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -142,11 +143,13 @@ pub fn load_post_file(path: impl AsRef<Path>) -> Result<Post> {
     let front_matter: FrontMatter = toml::from_str(&front_matter)
         .with_context(|| format!("parse front matter in {}", path.display()))?;
     let body_html = markdown_to_html(&body_markdown);
+    let body_plain_text = markdown_to_plain_text(&body_markdown);
 
     Ok(Post {
         front_matter,
         body_markdown,
         body_html,
+        body_plain_text,
     })
 }
 
@@ -287,6 +290,25 @@ fn markdown_to_html(markdown: &str) -> String {
     }
 
     html_output
+}
+
+fn markdown_to_plain_text(markdown: &str) -> String {
+    let (processed_markdown, _) = preprocess_math(markdown);
+    let parser = Parser::new_ext(&processed_markdown, Options::all());
+    let mut text = String::new();
+    for event in parser {
+        match event {
+            pulldown_cmark::Event::Text(t) | pulldown_cmark::Event::Code(t) => {
+                text.push_str(&t);
+                text.push(' ');
+            }
+            pulldown_cmark::Event::SoftBreak | pulldown_cmark::Event::HardBreak => {
+                text.push(' ');
+            }
+            _ => {}
+        }
+    }
+    text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 #[derive(Debug, Clone)]

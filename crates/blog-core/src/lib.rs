@@ -53,7 +53,7 @@ pub fn build_site(content_root: impl AsRef<Path>, output_root: impl AsRef<Path>)
                 "title": p.title(),
                 "slug": p.slug(),
                 "description": p.description(),
-                "body": p.body_markdown,
+                "body": p.body_plain_text,
             })
         })
         .collect();
