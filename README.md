@@ -1,46 +1,44 @@
 # r-blog
 
-A Rust-powered personal blog with Markdown content, a local-only admin backend, and a static frontend for Cloudflare Pages.
+A modular, Rust-powered static blog system featuring Markdown rendering, a local administration backend, and a static frontend optimized for Cloudflare Pages.
 
-The generated site now uses a typography-first layout with serif Chinese/English font stacks and KaTeX-powered math rendering for Markdown formulas.
+## Features
 
-## Layout
+- **Markdown Rendering**: Support for math formulas via KaTeX and syntax highlighting via Highlight.js.
+- **Full-text Search**: Built-in site-wide search with a lazy-loaded search index.
+- **Table of Contents (TOC)**: Automatically generated outline navigation for both desktop sidebars and mobile drawers.
+- **Image & Share Utilities**: Click-to-zoom image lightbox and canvas-based sharing card generator.
+- **Incremental Builds**: Fast static page generation with smart incremental writes.
+- **Local Admin UI**: Axum-based local web panel to write, edit, and manage Markdown posts.
 
-- `content/`: Markdown posts and site config
-- `crates/blog-core`: shared content loading and static site generation
-- `crates/sitegen`: CLI that builds the public site
-- `crates/admin`: local-only Axum admin app with post create/edit/delete/rebuild flows
-- `public/`: generated static site output
+## Project Structure
+
+- `content/`: Markdown files, assets, and configuration.
+- `crates/blog-core`: Core library for parsing Markdown and rendering templates.
+- `crates/sitegen`: CLI to build the static site.
+- `crates/admin`: Local Axum server for post management.
+- `public/`: Generated static assets.
 
 ## Commands
 
-Build the site:
+### Build the static site
 
 ```bash
 cargo run -p sitegen -- build
 ```
 
-Run the local admin app:
+### Run the local admin panel
 
 ```bash
 cargo run -p admin
 ```
 
-The admin app runs on `127.0.0.1:8787` and provides a browser UI for creating, editing, deleting, and rebuilding Markdown posts.
+The admin panel will be accessible at `http://127.0.0.1:8787`.
 
-## Cloudflare Pages
+## Deployment
 
-The generated `public/` directory is the deploy artifact for Cloudflare Pages.
+Deploy the `public/` folder to Cloudflare Pages.
 
-## Publishing Flow
-
-Recommended flow:
-
-1. Edit Markdown content locally under `content/posts/`.
-2. Rebuild the static site with `cargo run -p sitegen -- build` if you want to verify the output locally.
-3. Commit and push the changes to GitHub.
-4. Let Cloudflare Pages build from the GitHub repository automatically.
-
-With this setup, the local admin app only changes files in the repo. GitHub receives the commit, and Cloudflare rebuilds from that commit without needing the admin app to be public.
-
-If you want the backend to push commits for you later, that can be added as a separate step, but it is not required for the free-tier workflow.
+1. Write and edit content locally using the admin panel.
+2. Push your changes to GitHub.
+3. Configure Cloudflare Pages to build using `cargo run -p sitegen -- build` and deploy the output directory (`public/`).
