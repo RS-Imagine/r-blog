@@ -9,16 +9,28 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css" media="none" id="hljs-light">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" media="none" id="hljs-dark">
   <meta property="og:title" content=" Git Worktree 解决多分支管理痛点">
 <meta property="og:description" content="如果习惯使用 Git 来管理代码仓库，多个分支的维护还是挺麻烦的。">
 <meta property="og:type" content="article">
   <script>
     (function() {
-      var theme = localStorage.getItem('theme');
-      if (theme === 'dark' || theme === 'light') {
-        document.documentElement.setAttribute('data-theme', theme);
+      // 1. 优先读取用户手动设置的主题，否则跟随系统
+      var stored = localStorage.getItem('theme');
+      var theme = (stored === 'dark' || stored === 'light')
+        ? stored
+        : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      // 2. 在任何渲染发生前设置 data-theme，彻底消除背景色 FOUC
+      document.documentElement.setAttribute('data-theme', theme);
+      // 3. 同步激活正确的 highlight.js 主题
+      //    两个 <link> 初始 media=none，此处同步设为 all/none
+      //    浏览器在首帧前就知道该阻塞等待哪个文件，消除代码块高亮闪烁
+      var hljsLight = document.getElementById('hljs-light');
+      var hljsDark  = document.getElementById('hljs-dark');
+      if (hljsLight && hljsDark) {
+        hljsLight.media = theme === 'dark' ? 'none' : 'all';
+        hljsDark.media  = theme === 'dark' ? 'all'  : 'none';
       }
     })();
   </script>
@@ -165,22 +177,15 @@ git worktree remove ../forimagine-r-blog
       const themeToggleBtn = document.getElementById('theme-toggle-btn');
       if (themeToggleBtn) {
         const updateHljsTheme = (theme) => {
-          const hljsLight = document.querySelector('link[href*="github.min.css"]');
-          const hljsDark = document.querySelector('link[href*="github-dark.min.css"]');
+          const hljsLight = document.getElementById('hljs-light');
+          const hljsDark  = document.getElementById('hljs-dark');
           if (hljsLight && hljsDark) {
-            if (theme === 'dark') {
-              hljsLight.media = 'none';
-              hljsDark.media = 'all';
-            } else {
-              hljsLight.media = 'all';
-              hljsDark.media = 'none';
-            }
+            hljsLight.media = theme === 'dark' ? 'none' : 'all';
+            hljsDark.media  = theme === 'dark' ? 'all'  : 'none';
           }
         };
 
-        // Set initial hljs theme if overriden
-        const initialTheme = document.documentElement.getAttribute('data-theme');
-        if (initialTheme) updateHljsTheme(initialTheme);
+        // hljs initial sync is handled by the blocking head script
 
         themeToggleBtn.addEventListener('click', () => {
           const currentTheme = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
