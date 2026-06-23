@@ -623,7 +623,7 @@ pub fn favicon_svg() -> String {
     )
 }
 
-pub fn render_index(config: &SiteConfig, posts: &[Post]) -> String {
+pub fn render_index(config: &SiteConfig, posts: &[Post], css_hash: &str) -> String {
     let mut cards = String::new();
 
     for post in posts.iter().filter(|post| !post.draft()) {
@@ -666,10 +666,11 @@ pub fn render_index(config: &SiteConfig, posts: &[Post]) -> String {
             cards = cards,
         ),
         "",
+        css_hash,
     )
 }
 
-pub fn render_post(config: &SiteConfig, post: &Post) -> String {
+pub fn render_post(config: &SiteConfig, post: &Post, css_hash: &str) -> String {
     page(
         &post.front_matter.title,
         &post.front_matter.description,
@@ -705,10 +706,11 @@ pub fn render_post(config: &SiteConfig, post: &Post) -> String {
             title = escape_html(post.title()),
             description = escape_html(post.description()),
         ),
+        css_hash,
     )
 }
 
-pub fn render_page(config: &SiteConfig, page_content: &Page) -> String {
+pub fn render_page(config: &SiteConfig, page_content: &Page, css_hash: &str) -> String {
     page(
         &page_content.front_matter.title,
         &page_content.front_matter.description,
@@ -730,10 +732,11 @@ pub fn render_page(config: &SiteConfig, page_content: &Page) -> String {
             title = escape_html(&page_content.front_matter.title),
             description = escape_html(&page_content.front_matter.description),
         ),
+        css_hash,
     )
 }
 
-pub fn render_404(config: &SiteConfig) -> String {
+pub fn render_404(config: &SiteConfig, css_hash: &str) -> String {
     page(
         "Not Found",
         &config.description,
@@ -745,6 +748,7 @@ pub fn render_404(config: &SiteConfig) -> String {
   <a href="/">Go back home</a>
 </article>"#,
         "",
+        css_hash,
     )
 }
 
@@ -755,6 +759,7 @@ fn page(
   site_description: &str,
   body: &str,
   extra_head: &str,
+  css_hash: &str,
 ) -> String {
     format!(
         r#"<!doctype html>
@@ -764,7 +769,7 @@ fn page(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{description}">
   <title>{title}</title>
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css?v={css_hash}">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -1271,6 +1276,7 @@ fn page(
         site_description = escape_html(site_description),
         body = body,
         extra_head = extra_head,
+        css_hash = css_hash,
     )
 }
 

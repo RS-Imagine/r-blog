@@ -4,7 +4,18 @@ pub mod render;
 use anyhow::Result;
 use std::collections::HashSet;
 use std::fs;
+use std::hash::{Hash, Hasher};
+use std::collections::hash_map::DefaultHasher;
 use std::path::Path;
+
+/// Compute a short hex fingerprint of any string's content.
+/// Uses std DefaultHasher — deterministic within a single build run,
+/// and stable across runs for the same content (we seed it at 0).
+fn content_hash(s: &str) -> String {
+    let mut hasher = DefaultHasher::new();
+    s.hash(&mut hasher);
+    format!("{:016x}", hasher.finish())[..8].to_string()
+}
 
 pub fn build_site(content_root: impl AsRef<Path>, output_root: impl AsRef<Path>) -> Result<()> {
     let content_root = content_root.as_ref();
@@ -20,11 +31,13 @@ pub fn build_site(content_root: impl AsRef<Path>, output_root: impl AsRef<Path>)
         copy_dir_all(&static_dir, output_root)?;
     }
 
-    write_if_changed(output_root.join("styles.css"), render::stylesheet())?;
+    let css = render::stylesheet();
+    let css_hash = content_hash(&css);
+    write_if_changed(output_root.join("styles.css"), css)?;
     write_if_changed(output_root.join("favicon.svg"), render::favicon_svg())?;
     write_if_changed(
         output_root.join("index.html"),
-        render::render_index(&config, &posts),
+        render::render_index(&config, &posts, &css_hash),
     )?;
 
     let about_path = content_root.join("about.md");
@@ -32,7 +45,7 @@ pub fn build_site(content_root: impl AsRef<Path>, output_root: impl AsRef<Path>)
     if about_path.exists() {
         if let Ok(about_page) = content::load_page_file(&about_path) {
             fs::create_dir_all(&about_dir)?;
-            write_if_changed(about_dir.join("index.html"), render::render_page(&config, &about_page))?;
+            write_if_changed(about_dir.join("index.html"), render::render_page(&config, &about_page, &css_hash))?;
         }
     } else if about_dir.exists() {
         fs::remove_dir_all(&about_dir)?;
@@ -57,10 +70,10 @@ pub fn build_site(content_root: impl AsRef<Path>, output_root: impl AsRef<Path>)
     for post in &posts {
         let post_dir = output_root.join("posts").join(&post.front_matter.slug);
         fs::create_dir_all(&post_dir)?;
-        write_if_changed(post_dir.join("index.html"), render::render_post(&config, post))?;
+        write_if_changed(post_dir.join("index.html"), render::render_post(&config, post, &css_hash))?;
     }
 
-    write_if_changed(output_root.join("404.html"), render::render_404(&config))?;
+    write_if_changed(output_root.join("404.html"), render::render_404(&config, &css_hash))?;
     let search_index: Vec<_> = posts
         .iter()
         .filter(|p| !p.draft())
