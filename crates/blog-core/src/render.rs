@@ -4,62 +4,90 @@ pub fn stylesheet() -> String {
     String::from(
         r#":root {
   color-scheme: light;
-  --bg: #f6f1e7;
-  --bg-top: #fbf8f2;
-  --paper: rgba(255, 253, 248, 0.92);
-  --paper-solid: #fffdf8;
-  --paper-strong: #fffaf1;
-  --text: #20242a;
-  --muted: #66707a;
-  --accent: #794823;
-  --accent-strong: #5c3518;
-  --accent-soft: rgba(121, 72, 35, 0.1);
-  --accent-alpha-1: rgba(121, 72, 35, 0.09);
-  --accent-alpha-2: rgba(121, 72, 35, 0.06);
-  --accent-alpha-3: rgba(121, 72, 35, 0.18);
-  --accent-alpha-4: rgba(121, 72, 35, 0.22);
-  --border: #dcd1c2;
-  --border-soft: rgba(220, 209, 194, 0.6);
-  --code-bg: #ede5d8;
-  --shadow: 0 18px 50px rgba(31, 35, 40, 0.06);
-  --shadow-strong: 0 22px 70px rgba(31, 35, 40, 0.09);
-  --grid-line-1: rgba(255, 255, 255, 0.18);
-  --grid-line-2: rgba(255, 255, 255, 0.16);
-  --pre-bg: #faf8f5;
-  --pre-text: #2d2006;
-  --pre-border: #e6ddd0;
-  --kbd-bg: #fff;
+  --bg: #DDD6C1;
+  --bg-top: #E6DFCB;
+  --paper: rgba(221, 214, 193, 0.92);
+  --paper-solid: #DDD6C1;
+  --paper-strong: #D0C8B3;
+  --text: #502010;
+  --muted: #807565;
+  --accent: #805030;
+  --accent-strong: #402008;
+  --accent-soft: rgba(128, 80, 48, 0.1);
+  --accent-alpha-1: rgba(128, 80, 48, 0.09);
+  --accent-alpha-2: rgba(128, 80, 48, 0.06);
+  --accent-alpha-3: rgba(128, 80, 48, 0.18);
+  --accent-alpha-4: rgba(128, 80, 48, 0.22);
+  --border: #C4BCA8;
+  --border-soft: rgba(196, 188, 168, 0.6);
+  --code-bg: rgba(196, 188, 168, 0.4);
+  --shadow: 0 18px 50px rgba(80, 32, 16, 0.08);
+  --shadow-strong: 0 22px 70px rgba(80, 32, 16, 0.12);
+  --grid-line-1: rgba(255, 255, 255, 0.25);
+  --grid-line-2: rgba(255, 255, 255, 0.22);
+  --pre-bg: #C4BCA8;
+  --pre-text: #502010;
+  --pre-border: #C4BCA8;
+  --kbd-bg: #E6DFCB;
   --max-width: 980px;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #1c1a17;
-    --bg-top: #24221e;
-    --paper: rgba(30, 28, 25, 0.92);
-    --paper-solid: #1e1c19;
-    --paper-strong: #262420;
-    --text: #e6e0d8;
-    --muted: #a39c93;
-    --accent: #c48a5c;
-    --accent-strong: #d9a073;
-    --accent-soft: rgba(196, 138, 92, 0.15);
-    --accent-alpha-1: rgba(196, 138, 92, 0.09);
-    --accent-alpha-2: rgba(196, 138, 92, 0.06);
-    --accent-alpha-3: rgba(196, 138, 92, 0.18);
-    --accent-alpha-4: rgba(196, 138, 92, 0.22);
-    --border: #3d3832;
-    --border-soft: rgba(61, 56, 50, 0.6);
-    --code-bg: #262420;
+    --bg: #2C201A;
+    --bg-top: #33251F;
+    --paper: rgba(56, 42, 34, 0.92);
+    --paper-solid: #382A22;
+    --paper-strong: #423229;
+    --text: #F0E6D8;
+    --muted: #B8A89A;
+    --accent: #E5A080;
+    --accent-strong: #FFB591;
+    --accent-soft: rgba(229, 160, 128, 0.15);
+    --accent-alpha-1: rgba(229, 160, 128, 0.09);
+    --accent-alpha-2: rgba(229, 160, 128, 0.06);
+    --accent-alpha-3: rgba(229, 160, 128, 0.18);
+    --accent-alpha-4: rgba(229, 160, 128, 0.22);
+    --border: #5A453A;
+    --border-soft: rgba(90, 69, 58, 0.6);
+    --code-bg: rgba(90, 69, 58, 0.3);
     --shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
     --shadow-strong: 0 22px 70px rgba(0, 0, 0, 0.4);
-    --grid-line-1: rgba(255, 255, 255, 0.04);
-    --grid-line-2: rgba(255, 255, 255, 0.03);
-    --pre-bg: #151311;
-    --pre-text: #e6e0d8;
-    --pre-border: #262420;
-    --kbd-bg: #262420;
+    --grid-line-1: rgba(255, 255, 255, 0.03);
+    --grid-line-2: rgba(255, 255, 255, 0.02);
+    --pre-bg: rgba(25, 18, 14, 0.5);
+    --pre-text: #F0E6D8;
+    --pre-border: #5A453A;
+    --kbd-bg: #423229;
   }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #2C201A;
+  --bg-top: #33251F;
+  --paper: rgba(56, 42, 34, 0.92);
+  --paper-solid: #382A22;
+  --paper-strong: #423229;
+  --text: #F0E6D8;
+  --muted: #B8A89A;
+  --accent: #E5A080;
+  --accent-strong: #FFB591;
+  --accent-soft: rgba(229, 160, 128, 0.15);
+  --accent-alpha-1: rgba(229, 160, 128, 0.09);
+  --accent-alpha-2: rgba(229, 160, 128, 0.06);
+  --accent-alpha-3: rgba(229, 160, 128, 0.18);
+  --accent-alpha-4: rgba(229, 160, 128, 0.22);
+  --border: #5A453A;
+  --border-soft: rgba(90, 69, 58, 0.6);
+  --code-bg: rgba(90, 69, 58, 0.3);
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+  --shadow-strong: 0 22px 70px rgba(0, 0, 0, 0.4);
+  --grid-line-1: rgba(255, 255, 255, 0.03);
+  --grid-line-2: rgba(255, 255, 255, 0.02);
+  --pre-bg: rgba(25, 18, 14, 0.5);
+  --pre-text: #F0E6D8;
+  --pre-border: #5A453A;
+  --kbd-bg: #423229;
 }
 * { box-sizing: border-box; }
 html {
@@ -477,6 +505,23 @@ article img.zoomed {
 .search-btn:hover {
   color: var(--accent-strong);
 }
+.theme-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  padding: 0 4px;
+}
+.sun-icon { display: none; }
+.moon-icon { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .sun-icon { display: block; }
+  :root:not([data-theme="light"]) .moon-icon { display: none; }
+}
+:root[data-theme="dark"] .sun-icon { display: block; }
+:root[data-theme="dark"] .moon-icon { display: none; }
+:root[data-theme="light"] .sun-icon { display: none; }
+:root[data-theme="light"] .moon-icon { display: block; }
 .search-modal {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -568,12 +613,12 @@ pub fn favicon_svg() -> String {
         r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#aa6321ff"/>
-      <stop offset="100%" stop-color="#a15600ff"/>
+      <stop offset="0%" stop-color="#805030"/>
+      <stop offset="100%" stop-color="#502010"/>
     </linearGradient>
   </defs>
   <rect width="128" height="128" rx="28" fill="url(#bg)"/>
-  <text x="64" y="96" text-anchor="middle" font-family="Georgia, serif" font-size="92" font-weight="700" fill="#fffdf8">Q</text>
+  <text x="64" y="96" text-anchor="middle" font-family="Georgia, serif" font-size="92" font-weight="700" fill="#E0E0D0">Q</text>
 </svg>"##,
     )
 }
@@ -726,6 +771,14 @@ fn page(
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
   {extra_head}
+  <script>
+    (function() {{
+      var theme = localStorage.getItem('theme');
+      if (theme === 'dark' || theme === 'light') {{
+        document.documentElement.setAttribute('data-theme', theme);
+      }}
+    }})();
+  </script>
 </head>
 <body>
   <main class="wrapper">
@@ -738,6 +791,10 @@ fn page(
         <a href="/">Home</a>
         <button id="site-search-btn" class="search-btn" aria-label="Search">Search</button>
         <a href="/about/">About</a>
+        <button id="theme-toggle-btn" class="search-btn theme-btn" aria-label="Toggle Theme">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
       </nav>
     </header>
     {body}
@@ -756,6 +813,35 @@ fn page(
     document.addEventListener('DOMContentLoaded', () => {{
       if (typeof hljs !== 'undefined') {{ hljs.highlightAll(); }}
       
+      const themeToggleBtn = document.getElementById('theme-toggle-btn');
+      if (themeToggleBtn) {{
+        const updateHljsTheme = (theme) => {{
+          const hljsLight = document.querySelector('link[href*="github.min.css"]');
+          const hljsDark = document.querySelector('link[href*="github-dark.min.css"]');
+          if (hljsLight && hljsDark) {{
+            if (theme === 'dark') {{
+              hljsLight.media = 'none';
+              hljsDark.media = 'all';
+            }} else {{
+              hljsLight.media = 'all';
+              hljsDark.media = 'none';
+            }}
+          }}
+        }};
+
+        // Set initial hljs theme if overriden
+        const initialTheme = document.documentElement.getAttribute('data-theme');
+        if (initialTheme) updateHljsTheme(initialTheme);
+
+        themeToggleBtn.addEventListener('click', () => {{
+          const currentTheme = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+          updateHljsTheme(newTheme);
+        }});
+      }}
+
       const searchBtn = document.getElementById('site-search-btn');
       const searchModal = document.getElementById('search-modal');
       const searchInput = document.getElementById('search-input');
@@ -953,23 +1039,23 @@ fn page(
           canvas.style.height = height + 'px';
           ctx.scale(2, 2);
 
-          const isDark = document.documentElement.style.colorScheme === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches;
-          ctx.fillStyle = isDark ? '#1c1a17' : '#f6f1e7';
+          const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || (document.documentElement.getAttribute('data-theme') !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          ctx.fillStyle = isDark ? '#2C201A' : '#DDD6C1';
           ctx.fillRect(0, 0, width, height);
 
-          ctx.fillStyle = isDark ? 'rgba(196, 138, 92, 0.09)' : 'rgba(121, 72, 35, 0.09)';
+          ctx.fillStyle = isDark ? 'rgba(229, 160, 128, 0.09)' : 'rgba(128, 80, 48, 0.09)';
           ctx.beginPath();
           ctx.arc(0, 0, 300, 0, Math.PI * 2);
           ctx.fill();
           
-          ctx.fillStyle = isDark ? 'rgba(196, 138, 92, 0.06)' : 'rgba(121, 72, 35, 0.06)';
+          ctx.fillStyle = isDark ? 'rgba(229, 160, 128, 0.06)' : 'rgba(128, 80, 48, 0.06)';
           ctx.beginPath();
           ctx.arc(width, 0, 400, 0, Math.PI * 2);
           ctx.fill();
           
           let drawY = 140;
           
-          ctx.fillStyle = isDark ? '#e6e0d8' : '#20242a';
+          ctx.fillStyle = isDark ? '#F0E6D8' : '#502010';
           ctx.font = titleFont;
           for (let line of titleLines) {{
               ctx.fillText(line, 100, drawY);
@@ -978,7 +1064,7 @@ fn page(
           drawY += 20;
           
           if (descLines.length > 0) {{
-              ctx.fillStyle = isDark ? '#c48a5c' : '#794823';
+              ctx.fillStyle = isDark ? '#E5A080' : '#805030';
               ctx.font = descFont;
               for (let line of descLines) {{
                   ctx.fillText(line, 100, drawY);
@@ -988,7 +1074,7 @@ fn page(
           }}
           
           if (bodyLines.length > 0) {{
-              ctx.fillStyle = isDark ? '#a39c93' : '#66707a';
+              ctx.fillStyle = isDark ? '#B8A89A' : '#807565';
               ctx.font = bodyFont;
               for (let line of bodyLines) {{
                   ctx.fillText(line, 100, drawY);
@@ -1000,15 +1086,15 @@ fn page(
           const siteName = document.querySelector('.site-brand h1').innerText;
           const domain = window.location.host + window.location.pathname;
           
-          ctx.fillStyle = isDark ? '#a39c93' : '#66707a';
+          ctx.fillStyle = isDark ? '#5A453A' : '#C4BCA8';
           ctx.fillRect(100, height - 150, 600, 2);
 
           ctx.font = `bold 28px ${{fontStack}}`;
-          ctx.fillStyle = isDark ? '#e6e0d8' : '#20242a';
+          ctx.fillStyle = isDark ? '#F0E6D8' : '#502010';
           ctx.fillText(siteName, 100, height - 100);
           
           ctx.font = `italic 24px ${{fontStack}}`;
-          ctx.fillStyle = isDark ? '#a39c93' : '#66707a';
+          ctx.fillStyle = isDark ? '#B8A89A' : '#807565';
           ctx.fillText(domain, 100, height - 60);
 
           const dataUrl = canvas.toDataURL('image/png');
