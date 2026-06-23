@@ -106,6 +106,7 @@ body {
     radial-gradient(circle at top left, var(--accent-alpha-1), transparent 24%),
     radial-gradient(circle at top right, var(--accent-alpha-2), transparent 28%),
     linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 100%);
+  background-attachment: fixed;
   color: var(--text);
   line-height: 1.85;
   font-size: 18px;
@@ -599,4 +600,17 @@ article img.zoomed {
   color: var(--text);
   padding: 0 2px;
   border-radius: 2px;
+}
+.transition-fade {
+  transition: opacity 250ms ease-in-out, transform 250ms ease-in-out;
+  opacity: 1;
+  transform: translateY(0);
+}
+html.is-animating .transition-fade {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.swup-progress-bar {
+  height: 3px;
+  background-color: var(--accent);
 }
