@@ -110,6 +110,7 @@ body {
     radial-gradient(circle at top left, var(--accent-alpha-1), transparent 24%),
     radial-gradient(circle at top right, var(--accent-alpha-2), transparent 28%),
     linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 100%);
+  background-attachment: fixed;
   color: var(--text);
   line-height: 1.85;
   font-size: 18px;
@@ -604,6 +605,19 @@ article img.zoomed {
   padding: 0 2px;
   border-radius: 2px;
 }
+.transition-fade {
+  transition: opacity 250ms ease-in-out, transform 250ms ease-in-out;
+  opacity: 1;
+  transform: translateY(0);
+}
+html.is-animating .transition-fade {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.swup-progress-bar {
+  height: 3px;
+  background-color: var(--accent);
+}
 "#,
     )
 }
@@ -798,7 +812,7 @@ fn page(
   </script>
 </head>
 <body>
-  <main class="wrapper">
+  <div class="wrapper">
     <header class="site-header">
       <div class="site-brand">
         <h1>{site_title}</h1>
@@ -814,9 +828,11 @@ fn page(
         </button>
       </nav>
     </header>
-    {body}
+    <main id="swup" class="transition-fade">
+      {body}
+    </main>
     <footer>Qiulin built this website using Rust.</footer>
-  </main>
+  </div>
   <div id="search-modal" class="search-modal">
     <div class="search-content">
       <div class="search-input-wrapper">
@@ -826,9 +842,14 @@ fn page(
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://unpkg.com/swup@4"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {{
-      if (typeof hljs !== 'undefined') {{ hljs.highlightAll(); }}
+      const swup = new Swup({{
+        animationSelector: '[class*="transition-"]'
+      }});
+      window.swup = swup;
+      let cleanupFunctions = [];
       
       const themeToggleBtn = document.getElementById('theme-toggle-btn');
       if (themeToggleBtn) {{
@@ -942,10 +963,20 @@ fn page(
           }});
         }});
       }}
-      const images = document.querySelectorAll('article img');
-      const overlay = document.createElement('div');
-      overlay.className = 'zoom-overlay';
-      document.body.appendChild(overlay);
+      
+      function initPageFeatures() {{
+        cleanupFunctions.forEach(fn => fn());
+        cleanupFunctions = [];
+
+        if (typeof hljs !== 'undefined') {{ hljs.highlightAll(); }}
+        const swupContainer = document.getElementById('swup');
+        if (!swupContainer) return;
+
+        const images = document.querySelectorAll('article img');
+        const overlay = document.createElement('div');
+        overlay.className = 'zoom-overlay';
+        document.body.appendChild(overlay);
+        cleanupFunctions.push(() => overlay.remove());
 
       images.forEach(img => {{
         img.style.cursor = 'zoom-in';
@@ -976,14 +1007,16 @@ fn page(
         overlay.classList.remove('active');
       }});
       
-      window.addEventListener('scroll', () => {{
+      const zoomScrollHandler = () => {{
         const zoomedImg = document.querySelector('img.zoomed');
         if (zoomedImg) {{
           zoomedImg.classList.remove('zoomed');
           zoomedImg.style.transform = '';
           overlay.classList.remove('active');
         }}
-      }});
+      }};
+      window.addEventListener('scroll', zoomScrollHandler);
+      cleanupFunctions.push(() => window.removeEventListener('scroll', zoomScrollHandler));
       
       const shareBtn = document.getElementById('share-btn');
       if (shareBtn) {{
@@ -1135,6 +1168,7 @@ fn page(
           cardOverlay.appendChild(imgElement);
           cardOverlay.appendChild(tip);
           document.body.appendChild(cardOverlay);
+          cleanupFunctions.push(() => cardOverlay.remove());
           
           cardOverlay.addEventListener('click', (e) => {{
               if(e.target === cardOverlay) {{
@@ -1172,17 +1206,20 @@ fn page(
           }});
           
           document.body.appendChild(tocContainer);
+          cleanupFunctions.push(() => tocContainer.remove());
 
           // Mobile TOC Button & Drawer Logic
           const mobileTocBtn = document.createElement('button');
           mobileTocBtn.className = 'mobile-toc-btn';
           mobileTocBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/></svg>';
           document.body.appendChild(mobileTocBtn);
+          cleanupFunctions.push(() => mobileTocBtn.remove());
 
           const tocDrawerOverlay = document.createElement('div');
           tocDrawerOverlay.className = 'zoom-overlay';
           tocDrawerOverlay.style.zIndex = '998';
           document.body.appendChild(tocDrawerOverlay);
+          cleanupFunctions.push(() => tocDrawerOverlay.remove());
 
           function closeTocDrawer() {{
              tocContainer.classList.remove('drawer-open');
@@ -1248,10 +1285,11 @@ fn page(
           );
 
           headingEls.forEach(h => observer.observe(h));
+          cleanupFunctions.push(() => observer.disconnect());
 
           // Fallback: on scroll, find the heading closest to viewport top
           let ticking = false;
-          window.addEventListener('scroll', () => {{
+          const tocScrollHandler = () => {{
             if (!ticking) {{
               requestAnimationFrame(() => {{
                 const scrollY = window.scrollY + 100;
@@ -1265,12 +1303,18 @@ fn page(
               }});
               ticking = true;
             }}
-          }});
+          }};
+          window.addEventListener('scroll', tocScrollHandler);
+          cleanupFunctions.push(() => window.removeEventListener('scroll', tocScrollHandler));
 
           // Set initial active on load
           if (headingEls[0]) setActive(headingEls[0].id);
         }}
       }}
+      }} // end initPageFeatures
+      
+      initPageFeatures();
+      swup.hooks.on('page:view', initPageFeatures);
     }});
   </script>
 </body>
