@@ -1,22 +1,37 @@
 pub mod content;
+pub mod models;
 pub mod render;
+pub mod utils;
+
+mod markdown;
+mod math;
+mod store;
 
 use anyhow::Result;
 use std::collections::HashSet;
 use std::fs;
-use std::hash::{Hash, Hasher};
-use std::collections::hash_map::DefaultHasher;
 use std::path::Path;
 
-/// Compute a short hex fingerprint of any string's content.
-/// Uses std DefaultHasher — deterministic within a single build run,
-/// and stable across runs for the same content (we seed it at 0).
+/// Computes a short, stable content fingerprint used for CSS cache-busting.
+///
+/// Uses BLAKE3 (a cryptographic hash guaranteed to be deterministic and
+/// collision-resistant) instead of `DefaultHasher`, which is explicitly
+/// documented as NOT stable across Rust versions or process invocations.
 fn content_hash(s: &str) -> String {
-    let mut hasher = DefaultHasher::new();
-    s.hash(&mut hasher);
-    format!("{:016x}", hasher.finish())[..8].to_string()
+    let hash = blake3::hash(s.as_bytes());
+    // Take the first 8 hex characters (32 bits) – sufficient for cache busting.
+    hash.to_hex()[..8].to_string()
 }
 
+/// Builds the complete static site from `content_root` into `output_root`.
+///
+/// Steps performed:
+/// 1. Load `site.toml` and all posts.
+/// 2. Copy any static assets from `content/static/`.
+/// 3. Write `styles.css` and `favicon.svg` (skipped if unchanged).
+/// 4. Render `index.html`, `about/index.html`, every post, and `404.html`.
+/// 5. Delete output subdirs for posts that no longer exist in content.
+/// 6. Write `search_index.json` for client-side search.
 pub fn build_site(content_root: impl AsRef<Path>, output_root: impl AsRef<Path>) -> Result<()> {
     let content_root = content_root.as_ref();
     let output_root = output_root.as_ref();
@@ -26,31 +41,40 @@ pub fn build_site(content_root: impl AsRef<Path>, output_root: impl AsRef<Path>)
 
     fs::create_dir_all(output_root.join("posts"))?;
 
+    // Copy user-provided static assets (images, fonts, …).
     let static_dir = content_root.join("static");
     if static_dir.exists() {
         copy_dir_all(&static_dir, output_root)?;
     }
 
+    // CSS is embedded at compile time via include_str!; hash it for cache busting.
     let css = render::stylesheet();
-    let css_hash = content_hash(&css);
+    let css_hash = content_hash(css);
     write_if_changed(output_root.join("styles.css"), css)?;
     write_if_changed(output_root.join("favicon.svg"), render::favicon_svg())?;
+
+    // Index page.
     write_if_changed(
         output_root.join("index.html"),
         render::render_index(&config, &posts, &css_hash),
     )?;
 
+    // Optional about page.
     let about_path = content_root.join("about.md");
     let about_dir = output_root.join("about");
     if about_path.exists() {
         if let Ok(about_page) = content::load_page_file(&about_path) {
             fs::create_dir_all(&about_dir)?;
-            write_if_changed(about_dir.join("index.html"), render::render_page(&config, &about_page, &css_hash))?;
+            write_if_changed(
+                about_dir.join("index.html"),
+                render::render_page(&config, &about_page, &css_hash),
+            )?;
         }
     } else if about_dir.exists() {
         fs::remove_dir_all(&about_dir)?;
     }
 
+    // Remove output directories for deleted posts.
     let posts_dir = output_root.join("posts");
     let valid_slugs: HashSet<_> = posts.iter().map(|p| p.slug()).collect();
     if posts_dir.exists() {
@@ -67,13 +91,20 @@ pub fn build_site(content_root: impl AsRef<Path>, output_root: impl AsRef<Path>)
         }
     }
 
+    // Render each post.
     for post in &posts {
-        let post_dir = output_root.join("posts").join(&post.front_matter.slug);
+        let post_dir = output_root.join("posts").join(post.slug());
         fs::create_dir_all(&post_dir)?;
-        write_if_changed(post_dir.join("index.html"), render::render_post(&config, post, &css_hash))?;
+        write_if_changed(
+            post_dir.join("index.html"),
+            render::render_post(&config, post, &css_hash),
+        )?;
     }
 
+    // 404 page.
     write_if_changed(output_root.join("404.html"), render::render_404(&config, &css_hash))?;
+
+    // Client-side search index.
     let search_index: Vec<_> = posts
         .iter()
         .filter(|p| !p.draft())
@@ -92,6 +123,12 @@ pub fn build_site(content_root: impl AsRef<Path>, output_root: impl AsRef<Path>)
     Ok(())
 }
 
+// ---------------------------------------------------------------------------
+// Private helpers
+// ---------------------------------------------------------------------------
+
+/// Writes `content` to `path` only when it differs from the existing file,
+/// avoiding unnecessary filesystem writes and preserving mtime on unchanged files.
 fn write_if_changed(path: impl AsRef<Path>, content: impl AsRef<[u8]>) -> Result<()> {
     let path = path.as_ref();
     let content = content.as_ref();
@@ -106,6 +143,8 @@ fn write_if_changed(path: impl AsRef<Path>, content: impl AsRef<[u8]>) -> Result
     Ok(())
 }
 
+/// Recursively copies `src` into `dst`, skipping files that appear unchanged
+/// (same size and `dst_mtime >= src_mtime`).
 fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result<()> {
     let src = src.as_ref();
     let dst = dst.as_ref();
@@ -124,7 +163,9 @@ fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result<()> {
                 let src_meta = entry.metadata()?;
                 let dst_meta = fs::metadata(&dest_path)?;
                 if src_meta.len() == dst_meta.len() {
-                    if let (Ok(src_time), Ok(dst_time)) = (src_meta.modified(), dst_meta.modified()) {
+                    if let (Ok(src_time), Ok(dst_time)) =
+                        (src_meta.modified(), dst_meta.modified())
+                    {
                         if dst_time >= src_time {
                             continue;
                         }
