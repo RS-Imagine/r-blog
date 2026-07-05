@@ -1,18 +1,25 @@
 use anyhow::{Context, Result};
 use axum::{
     extract::{Multipart, Path, State},
+    http::StatusCode,
     response::{Html, Redirect},
     routing::{get, post},
     Form, Json, Router,
 };
 use blog_core::content::{self, PostDraft};
+use blog_core::models::FrontMatter;
+use blog_core::utils::escape_html;
 use chrono::Local;
 use serde::Deserialize;
+use std::collections::HashSet;
+use std::fs;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use tokio::net::TcpListener;
-use std::fs;
-use std::collections::HashSet;
+
+// ---------------------------------------------------------------------------
+// Application state
+// ---------------------------------------------------------------------------
 
 #[derive(Clone)]
 struct AppState {
@@ -20,16 +27,23 @@ struct AppState {
     output_root: PathBuf,
 }
 
+// ---------------------------------------------------------------------------
+// Form types
+// ---------------------------------------------------------------------------
+
+/// Raw form data received from the post editor HTML form.
 #[derive(Debug, Deserialize)]
 struct PostForm {
     title: String,
     slug: Option<String>,
     description: String,
     body_markdown: String,
+    /// Present when the "Save as draft" checkbox is checked; absent otherwise.
     draft: Option<String>,
     date: Option<String>,
 }
 
+/// Validated, normalised form data ready for display in the editor template.
 #[derive(Debug, Clone)]
 struct PostFormData {
     title: String,
@@ -39,6 +53,10 @@ struct PostFormData {
     date: String,
     draft: bool,
 }
+
+// ---------------------------------------------------------------------------
+// Entry point
+// ---------------------------------------------------------------------------
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -51,7 +69,7 @@ async fn main() -> Result<()> {
         .route("/", get(dashboard))
         .route("/posts/new", get(new_post_form).post(create_post))
         .route("/posts/{slug}/edit", get(edit_post_form).post(update_post))
-        .route("/posts/{slug}/delete", post(delete_post))
+        .route("/posts/{slug}/delete", post(delete_post_handler))
         .route("/build", post(rebuild_site))
         .route("/api/posts", get(list_posts))
         .route("/api/upload", post(upload_image))
@@ -69,9 +87,15 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn dashboard(State(state): State<AppState>) -> Html<String> {
-    let posts = content::load_posts(&state.content_root).unwrap_or_default();
-    Html(render_dashboard(&posts))
+// ---------------------------------------------------------------------------
+// Route handlers
+// ---------------------------------------------------------------------------
+
+async fn dashboard(
+    State(state): State<AppState>,
+) -> Result<Html<String>, (StatusCode, String)> {
+    let posts = content::load_posts(&state.content_root).map_err(internal_error)?;
+    Ok(Html(render_dashboard(&posts)))
 }
 
 async fn new_post_form() -> Html<String> {
@@ -93,10 +117,10 @@ async fn new_post_form() -> Html<String> {
 async fn edit_post_form(
     State(state): State<AppState>,
     Path(slug): Path<String>,
-) -> Result<Html<String>, (axum::http::StatusCode, String)> {
+) -> Result<Html<String>, (StatusCode, String)> {
     let post = content::load_post_by_slug(&state.content_root, &slug)
         .map_err(internal_error)?
-        .ok_or_else(|| (axum::http::StatusCode::NOT_FOUND, format!("post {slug} not found")))?;
+        .ok_or_else(|| (StatusCode::NOT_FOUND, format!("post {slug} not found")))?;
 
     let action = format!("/posts/{}/edit", escape_html(&slug));
     Ok(Html(render_post_form(
@@ -117,7 +141,7 @@ async fn edit_post_form(
 async fn create_post(
     State(state): State<AppState>,
     Form(input): Form<PostForm>,
-) -> Result<Redirect, (axum::http::StatusCode, String)> {
+) -> Result<Redirect, (StatusCode, String)> {
     save_post_form(&state.content_root, input, None, false).map_err(internal_error)?;
     Ok(Redirect::to("/"))
 }
@@ -126,38 +150,44 @@ async fn update_post(
     State(state): State<AppState>,
     Path(slug): Path<String>,
     Form(input): Form<PostForm>,
-) -> Result<Redirect, (axum::http::StatusCode, String)> {
-    let final_slug = save_post_form(&state.content_root, input, Some(&slug), true).map_err(internal_error)?;
+) -> Result<Redirect, (StatusCode, String)> {
+    let final_slug =
+        save_post_form(&state.content_root, input, Some(&slug), true).map_err(internal_error)?;
+    // If the slug changed, delete the old file so we don't leave an orphan.
     if final_slug != slug {
         content::delete_post(&state.content_root, &slug).map_err(internal_error)?;
     }
     Ok(Redirect::to("/"))
 }
 
-async fn delete_post(
+async fn delete_post_handler(
     State(state): State<AppState>,
     Path(slug): Path<String>,
-) -> Result<Redirect, (axum::http::StatusCode, String)> {
+) -> Result<Redirect, (StatusCode, String)> {
     content::delete_post(&state.content_root, &slug).map_err(internal_error)?;
     Ok(Redirect::to("/"))
 }
 
-async fn rebuild_site(State(state): State<AppState>) -> Result<Redirect, (axum::http::StatusCode, String)> {
-    blog_core::build_site(&state.content_root, &state.output_root).map_err(|e| internal_error(e))?;
+async fn rebuild_site(
+    State(state): State<AppState>,
+) -> Result<Redirect, (StatusCode, String)> {
+    blog_core::build_site(&state.content_root, &state.output_root).map_err(internal_error)?;
     Ok(Redirect::to("/"))
 }
 
-async fn cleanup_images(State(state): State<AppState>) -> Result<Html<String>, (axum::http::StatusCode, String)> {
-    let posts = content::load_posts(&state.content_root).unwrap_or_default();
+async fn cleanup_images(
+    State(state): State<AppState>,
+) -> Result<Html<String>, (StatusCode, String)> {
+    let posts = content::load_posts(&state.content_root).map_err(internal_error)?;
     let mut referenced_images = HashSet::new();
 
-    for post in posts {
+    for post in &posts {
         let body = &post.body_markdown;
         let mut start_idx = 0;
         while let Some(idx) = body[start_idx..].find("/images/") {
             let actual_idx = start_idx + idx;
-            let img_start = actual_idx + 8;
-            
+            let img_start = actual_idx + 8; // skip "/images/"
+
             let mut img_end = img_start;
             for ch in body[img_start..].chars() {
                 if ch == ')' || ch == '"' || ch.is_whitespace() {
@@ -165,7 +195,7 @@ async fn cleanup_images(State(state): State<AppState>) -> Result<Html<String>, (
                 }
                 img_end += ch.len_utf8();
             }
-            
+
             let img_name = &body[img_start..img_end];
             if !img_name.is_empty() {
                 referenced_images.insert(img_name.to_string());
@@ -175,7 +205,7 @@ async fn cleanup_images(State(state): State<AppState>) -> Result<Html<String>, (
     }
 
     let images_dir = state.content_root.join("static").join("images");
-    let mut deleted_count = 0;
+    let mut deleted_count = 0u32;
 
     if images_dir.exists() {
         if let Ok(entries) = fs::read_dir(&images_dir) {
@@ -214,15 +244,17 @@ async fn cleanup_images(State(state): State<AppState>) -> Result<Html<String>, (
     )))
 }
 
-async fn list_posts(State(state): State<AppState>) -> Json<Vec<content::Post>> {
-    let posts = content::load_posts(&state.content_root).unwrap_or_default();
-    Json(posts)
+async fn list_posts(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<content::Post>>, (StatusCode, String)> {
+    let posts = content::load_posts(&state.content_root).map_err(internal_error)?;
+    Ok(Json(posts))
 }
 
 async fn upload_image(
     State(state): State<AppState>,
     mut multipart: Multipart,
-) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
     let images_dir = state.content_root.join("static").join("images");
     fs::create_dir_all(&images_dir).map_err(internal_error)?;
 
@@ -232,6 +264,7 @@ async fn upload_image(
         let name = field.name().unwrap_or("").to_string();
         if name == "image" || name == "file" {
             let file_name = field.file_name().unwrap_or("image.png").to_string();
+            // Strip path separators to prevent directory traversal.
             let file_name = file_name.replace('/', "").replace('\\', "");
             let data = field.bytes().await.map_err(internal_error)?;
             let file_path = images_dir.join(&file_name);
@@ -242,12 +275,18 @@ async fn upload_image(
     }
 
     if url.is_empty() {
-        return Err((axum::http::StatusCode::BAD_REQUEST, "No file provided".to_string()));
+        return Err((StatusCode::BAD_REQUEST, "No file provided".to_string()));
     }
 
     Ok(Json(serde_json::json!({ "url": url })))
 }
 
+// ---------------------------------------------------------------------------
+// Business logic helpers
+// ---------------------------------------------------------------------------
+
+/// Validates the incoming form, constructs a [`PostDraft`], and persists it.
+/// Returns the final slug so the caller can detect slug changes.
 fn save_post_form(
     content_root: &std::path::Path,
     input: PostForm,
@@ -257,22 +296,22 @@ fn save_post_form(
     let slug = normalized_slug(&input, existing_slug);
     let date = input
         .date
-        .filter(|value| !value.trim().is_empty())
+        .filter(|v| !v.trim().is_empty())
         .unwrap_or_else(today_string);
 
-    let updated = if is_update {
-        Some(today_string())
-    } else {
-        None
-    };
+    // Only set `updated` when this is an explicit save of existing content,
+    // not on initial creation.
+    let updated = is_update.then(today_string);
 
     let draft = PostDraft {
-        title: input.title,
-        date,
-        updated,
-        slug: slug.clone(),
-        description: input.description,
-        draft: input.draft.is_some(),
+        front_matter: FrontMatter {
+            title: input.title,
+            date,
+            updated,
+            slug: slug.clone(),
+            description: input.description,
+            draft: input.draft.is_some(),
+        },
         body_markdown: input.body_markdown,
     };
 
@@ -280,26 +319,31 @@ fn save_post_form(
     Ok(slug)
 }
 
+/// Returns the slug to use for the saved post.
+///
+/// Priority: explicit slug from form → existing slug (for edits) → auto-generated from title.
 fn normalized_slug(input: &PostForm, existing_slug: Option<&str>) -> String {
     let slug = input.slug.as_deref().unwrap_or_default().trim();
     if !slug.is_empty() {
         return slug.to_string();
     }
-
-    if let Some(existing_slug) = existing_slug {
-        return existing_slug.to_string();
+    if let Some(existing) = existing_slug {
+        return existing.to_string();
     }
-
     content::slugify(&input.title)
 }
 
-fn render_dashboard(posts: &[content::Post]) -> String {
-    let mut rows = String::new();
+// ---------------------------------------------------------------------------
+// HTML rendering
+// ---------------------------------------------------------------------------
 
-    for post in posts {
-        let status = if post.draft() { "Draft" } else { "Published" };
-        rows.push_str(&format!(
-            r#"<article class="card">
+fn render_dashboard(posts: &[content::Post]) -> String {
+    let rows: String = posts
+        .iter()
+        .map(|post| {
+            let status = if post.draft() { "Draft" } else { "Published" };
+            format!(
+                r#"<article class="card">
   <div class="card-top">
     <div>
       <h3>{title}</h3>
@@ -314,13 +358,14 @@ fn render_dashboard(posts: &[content::Post]) -> String {
     </div>
   </div>
 </article>"#,
-            title = escape_html(post.title()),
-            date = escape_html(post.date()),
-            slug = escape_html(post.slug()),
-            status = status,
-            description = escape_html(post.description()),
-        ));
-    }
+                title = escape_html(post.title()),
+                date = escape_html(post.date()),
+                slug = escape_html(post.slug()),
+                status = status,
+                description = escape_html(post.description()),
+            )
+        })
+        .collect();
 
     render_page(
         "r-blog admin",
@@ -336,7 +381,7 @@ fn render_dashboard(posts: &[content::Post]) -> String {
     <form method="post" action="/build">
       <button class="button" type="submit">Rebuild Site</button>
     </form>
-    <form method="post" action="/api/cleanup-images" onsubmit="return confirm('Are you sure you want to delete all unused images?');">
+    <form method="post" action="/api/cleanup-images">
       <button class="button danger" type="button" onclick="if(confirm('Are you sure you want to delete all unused images?')) this.form.submit();">Clean Up Images</button>
     </form>
   </div>
@@ -430,7 +475,6 @@ fn render_post_form(title: &str, action: &str, submit_label: &str, data: &PostFo
         const file = item.getAsFile();
         if (!file) continue;
         e.preventDefault();
-        
         const formData = new FormData();
         formData.append('file', file, file.name || 'pasted-image.png');
         try {{
@@ -449,7 +493,7 @@ fn render_post_form(title: &str, action: &str, submit_label: &str, data: &PostFo
         }} catch (err) {{
           alert('Upload pasted image failed: ' + err);
         }}
-        break; // Only handle the first image
+        break;
       }}
     }}
   }});
@@ -468,6 +512,7 @@ fn render_post_form(title: &str, action: &str, submit_label: &str, data: &PostFo
     )
 }
 
+/// Assembles a complete admin HTML page with inline styles.
 fn render_page(title: &str, body: &str) -> String {
     format!(
         r#"<!doctype html>
@@ -545,19 +590,14 @@ fn render_page(title: &str, body: &str) -> String {
     )
 }
 
+// ---------------------------------------------------------------------------
+// Utility functions
+// ---------------------------------------------------------------------------
+
 fn today_string() -> String {
     Local::now().date_naive().format("%F").to_string()
 }
 
-fn internal_error<E: std::fmt::Display>(error: E) -> (axum::http::StatusCode, String) {
-    (axum::http::StatusCode::INTERNAL_SERVER_ERROR, error.to_string())
-}
-
-fn escape_html(input: &str) -> String {
-    input
-        .replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
-        .replace('"', "&quot;")
-        .replace('\'', "&#39;")
+fn internal_error<E: std::fmt::Display>(error: E) -> (StatusCode, String) {
+    (StatusCode::INTERNAL_SERVER_ERROR, error.to_string())
 }

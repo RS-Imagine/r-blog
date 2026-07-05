@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="That is where the heart longs to be! (心之所向)">
   <title>Qiulin&#39;s Blog</title>
-  <link rel="stylesheet" href="/styles.css?v=bd3405ba">
+  <link rel="stylesheet" href="/styles.css?v=3b7581e8">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -22,8 +22,6 @@
       // 2. 在任何渲染发生前设置 data-theme，彻底消除背景色 FOUC
       document.documentElement.setAttribute('data-theme', theme);
       // 3. 同步激活正确的 highlight.js 主题
-      //    两个 <link> 初始 media=none，此处同步设为 all/none
-      //    浏览器在首帧前就知道该阻塞等待哪个文件，消除代码块高亮闪烁
       var hljsLight = document.getElementById('hljs-light');
       var hljsDark  = document.getElementById('hljs-dark');
       if (hljsLight && hljsDark) {
@@ -97,7 +95,7 @@
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
   <script src="https://unpkg.com/swup@4"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
       const swup = new Swup({
         animationSelector: '[class*="transition-"]'
       });
@@ -205,7 +203,7 @@
             excerpt.className = 'search-result-excerpt';
             
             // Highlight query
-            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')})`, 'gi');
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
             excerpt.innerHTML = excerptText.replace(regex, '<mark>$1</mark>');
             title.innerHTML = post.title.replace(regex, '<mark>$1</mark>');
             
@@ -565,7 +563,7 @@
         }
       }
       } // end initPageFeatures
-      
+
       initPageFeatures();
       swup.hooks.on('page:view', initPageFeatures);
     });
