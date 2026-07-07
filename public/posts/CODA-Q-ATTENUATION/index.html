@@ -1,0 +1,1535 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="回顾我那篇论文撰写的历程">
+  <title>地震尾波衰减研究</title>
+  <link rel="stylesheet" href="/styles.css?v=e2d419e0">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css" media="none" id="hljs-light">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" media="none" id="hljs-dark">
+  <meta property="og:title" content="地震尾波衰减研究">
+<meta property="og:description" content="回顾我那篇论文撰写的历程">
+<meta property="og:type" content="article">
+  <script>
+    (function() {
+      // 1. 优先读取用户手动设置的主题，否则跟随系统
+      var stored = localStorage.getItem('theme');
+      var theme = (stored === 'dark' || stored === 'light')
+        ? stored
+        : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      // 2. 在任何渲染发生前设置 data-theme，彻底消除背景色 FOUC
+      document.documentElement.setAttribute('data-theme', theme);
+      // 3. 同步激活正确的 highlight.js 主题
+      var hljsLight = document.getElementById('hljs-light');
+      var hljsDark  = document.getElementById('hljs-dark');
+      if (hljsLight && hljsDark) {
+        hljsLight.media = theme === 'dark' ? 'none' : 'all';
+        hljsDark.media  = theme === 'dark' ? 'all'  : 'none';
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="wrapper">
+    <header class="site-header">
+      <div class="site-brand">
+        <h1>Qiulin&#39;s Blog</h1>
+        <p>That is where the heart longs to be! (心之所向)</p>
+      </div>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="/">Home</a>
+        <button id="site-search-btn" class="search-btn" aria-label="Search">Search</button>
+        <a href="/about/">About</a>
+        <button id="theme-toggle-btn" class="search-btn theme-btn" aria-label="Toggle Theme">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </nav>
+    </header>
+    <main id="swup" class="transition-fade">
+      <section class="article-shell">
+  <a class="back-link" href="/">&larr; Back to posts</a>
+  <article>
+  <div class="meta">2026-07-06</div>
+  <h1>地震尾波衰减研究</h1>
+  <p class="meta">回顾我那篇论文撰写的历程</p>
+  <div><blockquote>
+<p>姜秀璇 - 2022 - 基于单次散射模型的河西走廊地区尾波qc值特征研究</p>
+<p>梁钊城 - 2024 - 尾波衰减Qc值在地震预测中的应用研究</p>
+</blockquote>
+<p>主要基于以上两篇硕士学位论文，撰写本文档。</p>
+<p>主要使用<code>Visual Studio Code</code>和<code>Antigravity</code>两个编辑器中集成的<code>Claude Sonnet</code>系列的AI模型，以辅助实现本研究中用于数据处理的各类脚本。</p>
+<h2>1 地震事件</h2>
+<table><thead><tr><th></th><th style="text-align: left"><strong>姜秀璇</strong>👍</th><th><strong>梁钊城</strong></th></tr></thead><tbody>
+<tr><td><strong>研究区域</strong></td><td style="text-align: left">河西走廊地区</td><td>青藏高原东北缘</td></tr>
+<tr><td><strong>时间跨度</strong></td><td style="text-align: left">2000年6月 至 2020年12月</td><td>2000年6月 至 2023年4月</td></tr>
+<tr><td><strong>震级选择</strong></td><td style="text-align: left"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.5</mn><mo>≤</mo><mi>M</mi><mo>≤</mo><mn>5.1</mn></mrow><annotation encoding="application/x-tex">1.5 \le M \le 5.1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.136em;height:0.7804em;"></span><span class="mord">1</span><span class="mord">.</span><span class="mord">5</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="vertical-align:-0.136em;height:0.8193em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">M</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">5</span><span class="mord">.</span><span class="mord">1</span></span></span></span><br/><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mn>1.5</mn><mo>≤</mo><mi>M</mi><mo>≤</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">( 1.5\le M\le 3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">1</span><span class="mord">.</span><span class="mord">5</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="vertical-align:-0.136em;height:0.8193em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">M</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">3</span></span></span></span> 和 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>&lt;</mo><mi>M</mi><mo>≤</mo><mn>5.1</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">3\lt M \le 5.1)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6835em;vertical-align:-0.0391em;"></span><span class="mord">3</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8193em;vertical-align:-0.136em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">M</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">5</span><span class="mord">.</span><span class="mord">1</span><span class="mclose">)</span></span></span></span></td><td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mo>≥</mo><mn>2.0</mn></mrow><annotation encoding="application/x-tex">M \ge 2.0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8193em;vertical-align:-0.136em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">M</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span><span class="mord">.</span><span class="mord">0</span></span></span></span></td></tr>
+<tr><td><strong>震中距</strong></td><td style="text-align: left"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≤</mo><mn>100</mn><mi>k</mi><mi>m</mi></mrow><annotation encoding="application/x-tex">\le 100 km</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.136em;height:0.7719em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord">1</span><span class="mord">0</span><span class="mord">0</span><span class="mord mathnormal">km</span></span></span></span><br/>内细分三级震中距</td><td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≤</mo><mn>100</mn><mi>k</mi><mi>m</mi></mrow><annotation encoding="application/x-tex">\le 100 km</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.136em;height:0.7719em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord">1</span><span class="mord">0</span><span class="mord">0</span><span class="mord mathnormal">km</span></span></span></span></td></tr>
+<tr><td><strong>震源深度</strong></td><td style="text-align: left"><em>（未说明）</em></td><td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>≤</mo><mi>D</mi><mo>≤</mo><mn>44</mn><mi>k</mi><mi>m</mi></mrow><annotation encoding="application/x-tex">1 \le D \le 44 km</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.136em;height:0.7804em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="vertical-align:-0.136em;height:0.8193em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">D</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord">4</span><span class="mord">4</span><span class="mord mathnormal">km</span></span></span></span></td></tr>
+<tr><td><strong>地震记录</strong></td><td style="text-align: left">14883条地震记录中<br/>筛选出<strong>5948条</strong>地震记录</td><td>东部3958次地震<br/>西部1252次地震<br/>未说明筛选结果</td></tr>
+</tbody></table>
+<h2><strong>2 台站信息</strong></h2>
+<table><thead><tr><th></th><th><strong>姜秀璇</strong></th><th><strong>梁钊城</strong>👍</th></tr></thead><tbody>
+<tr><td><strong>台站</strong></td><td>甘肃省河西走廊区域8个数字固定台网台站、40个主动源流动台、34个喜马拉雅二期流动台</td><td>东部：150个喜马拉雅一期流动台站、125个喜马拉雅二期流动台站、59个甘肃地震监测固定台<br/>西部：5个甘肃测震台网的固定数字测震台站</td></tr>
+<tr><td><strong>频带</strong></td><td><em>（未说明）</em></td><td>宽频地震仪(60s-50Hz、60 s-100Hz和120s-100Hz)<br/>甚宽带地震仪(120s-50Hz)</td></tr>
+</tbody></table>
+<h2>3 参数设置</h2>
+<table><thead><tr><th></th><th>姜秀璇👍</th><th>梁钊城</th></tr></thead><tbody>
+<tr><td><strong>波形分量</strong></td><td>垂直分量</td><td><em>（未说明）</em></td></tr>
+<tr><td><strong>事件截取</strong></td><td>从地震波初至时间前10秒开始，向后截取200秒的地震记录</td><td>根据地震发生时刻<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">T_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="margin-right:0.05em;top:-2.55em;margin-left:-0.1389em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>截取地震发生前10s，以及之后300s的地震波形</td></tr>
+<tr><td><strong>滤波器</strong></td><td>带宽为<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo>±</mo><mn>1</mn><mi mathvariant="normal">/</mi><mn>3</mn><mi>f</mi></mrow><annotation encoding="application/x-tex">f\pm1/3f</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">±</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mord">/</span><span class="mord">3</span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span></span></span></span>的4阶Butterworth带通滤波器</td><td>带宽为<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo>±</mo><mn>1</mn><mi mathvariant="normal">/</mi><mn>3</mn><mi>f</mi></mrow><annotation encoding="application/x-tex">f\pm1/3f</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">±</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="vertical-align:-0.25em;height:1em;"></span><span class="mord">1</span><span class="mord">/</span><span class="mord">3</span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span></span></span></span>的4阶Butterworth带通滤波器</td></tr>
+<tr><td><strong>中心频率</strong></td><td>1.5Hz、3Hz、6Hz、9Hz、12Hz、18Hz和24Hz</td><td>1.5Hz、3Hz、6Hz、9Hz、12Hz、18Hz和24Hz</td></tr>
+<tr><td><strong>尾波窗口起始时间</strong></td><td>用P波到时及发震时刻确定尾波窗口起始时间<br/><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mi>s</mi></msub><mo>=</mo><mn>2</mn><msqrt><mn>3</mn></msqrt><mo stretchy="false">(</mo><msub><mi>T</mi><mi>p</mi></msub><mo>−</mo><msub><mi>T</mi><mi>o</mi></msub><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">T_s = 2\sqrt{3}(T_p-T_o)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="margin-left:-0.1389em;top:-2.55em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">s</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="vertical-align:-0.2861em;height:1.1933em;"></span><span class="mord">2</span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9072em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord">3</span></span></span><span style="top:-2.8672em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="height:1.08em;min-width:0.853em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" viewBox="0 0 400000 1080" height="1.08em" preserveAspectRatio="xMinYMin slice"><path d="M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1328em;"><span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="margin-left:-0.1389em;top:-2.55em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">p</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="margin-left:-0.1389em;top:-2.55em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">o</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></td><td>对滤波后的数据选取两倍S波走时作为流逝时间窗的开始<br/><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mi>s</mi></msub><mo>=</mo><mn>2</mn><msqrt><mn>3</mn></msqrt><mo stretchy="false">(</mo><msub><mi>T</mi><mi>p</mi></msub><mo>−</mo><msub><mi>T</mi><mi>o</mi></msub><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">T_s = 2\sqrt{3}(T_p-T_o)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="margin-left:-0.1389em;margin-right:0.05em;top:-2.55em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">s</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.1933em;vertical-align:-0.2861em;"></span><span class="mord">2</span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9072em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord">3</span></span></span><span style="top:-2.8672em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg xmlns="http://www.w3.org/2000/svg" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice" width="400em"><path d="M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1328em;"><span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">p</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">o</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></td></tr>
+<tr><td><strong>滑动窗长</strong></td><td>动态采样：<br/>取滑动窗长为<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>5</mn><mi>f</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{5}{f}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.4811em;height:1.3262em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8451em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.1076em;">f</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">5</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.4811em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>秒，步长为滑动窗长的一半<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>5</mn><mrow><mn>2</mn><mi>f</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">\frac{5}{2f}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.4811em;height:1.3262em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8451em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">2</span><span class="mord mathnormal mtight" style="margin-right:0.1076em;">f</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">5</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.4811em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>秒</td><td>动态采样：<br/>取滑动窗长为<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>5</mn><mi>f</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{5}{f}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.4811em;height:1.3262em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8451em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.1076em;">f</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">5</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.4811em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>秒，步长为滑动窗长的一半<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>5</mn><mrow><mn>2</mn><mi>f</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">\frac{5}{2f}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.4811em;height:1.3262em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8451em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">2</span><span class="mord mathnormal mtight" style="margin-right:0.1076em;">f</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">5</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.4811em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>秒</td></tr>
+<tr><td><strong>流逝时间窗</strong></td><td>20s、30s 和40s</td><td>20s、30s 和40s</td></tr>
+<tr><td><strong>信噪比</strong></td><td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mi>N</mi><mi>R</mi><mo>≥</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">SNR \ge 2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.136em;height:0.8193em;"></span><span class="mord mathnormal" style="margin-right:0.0077em;">SNR</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span></span></span></span> 和 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mi>N</mi><mi>R</mi><mo>≥</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">SNR \ge 3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.136em;height:0.8193em;"></span><span class="mord mathnormal" style="margin-right:0.0077em;">SNR</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">3</span></span></span></span> 以进行对比分析</td><td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mi>N</mi><mi>R</mi><mo>≥</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">SNR \ge 3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.136em;height:0.8193em;"></span><span class="mord mathnormal" style="margin-right:0.0077em;">SNR</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">3</span></span></span></span></td></tr>
+<tr><td><strong>最大相关系数</strong></td><td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≤</mo><mo>−</mo><mn>0.6</mn></mrow><annotation encoding="application/x-tex">\le -0.6</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.136em;height:0.7719em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">−</span><span class="mord">0</span><span class="mord">.</span><span class="mord">6</span></span></span></span> 以及 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≤</mo><mo>−</mo><mn>0.7</mn></mrow><annotation encoding="application/x-tex">\le -0.7</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7719em;vertical-align:-0.136em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">−</span><span class="mord">0</span><span class="mord">.</span><span class="mord">7</span></span></span></span> 以进行对比分析</td><td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≤</mo><mo>−</mo><mn>0.6</mn></mrow><annotation encoding="application/x-tex">\le -0.6</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.136em;height:0.7719em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">−</span><span class="mord">0</span><span class="mord">.</span><span class="mord">6</span></span></span></span></td></tr>
+</tbody></table>
+<blockquote>
+<p>更为详细的参数设置解释可见朱新运的博士论文《衰减、场地响应等地震波传播相关信息综合研究》</p>
+</blockquote>
+<h2>4 流程简介</h2>
+<ul>
+<li>
+<p><strong>姜秀璇：</strong> <strong>（数据预处理）</strong></p>
+<ol>
+<li>将多种格式的地震波形记录转化成为<strong>SAC格式</strong>，从中分离出垂直分量地震记录；</li>
+<li><strong>挑选出质量较好的波形</strong>，通过SAC程序，从地震波初至时间前10秒开始，向后<strong>截取</strong>200秒的地震记录；</li>
+<li>将发震时刻信息等信息写入SAC头段，并手动标出地震波<strong>P波到时</strong>；</li>
+<li>将参考时间由北京时转换为世界时，为Python程序的运行和计算做好准备。</li>
+</ol>
+</li>
+<li>
+<p><strong>梁钊城：</strong></p>
+<ol>
+<li>使用巴特沃夫滤波器对数据进行带通滤波；</li>
+<li>滤波后的数据选取两倍S波走时作为流逝时间窗的开始<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mi>s</mi></msub></mrow><annotation encoding="application/x-tex">T_s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.15em;height:0.8333em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="margin-right:0.05em;top:-2.55em;margin-left:-0.1389em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">s</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>，在流逝时间窗上使用滑动窗长进行计算<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>c</mi></msub></mrow><annotation encoding="application/x-tex">Q_c</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.1944em;height:0.8778em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="margin-left:0em;top:-2.55em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>，并计算尾波均方根幅值<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mo>=</mo><mo stretchy="false">(</mo><mi>f</mi><mo separator="true">,</mo><mi>t</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">A=(f,t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">t</span><span class="mclose">)</span></span></span></span>；</li>
+<li>使用最小二乘法拟合与<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span></span></span></span>的线性函数包络线斜率<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mo>−</mo><mi>π</mi><mi>f</mi><mi mathvariant="normal">/</mi><msub><mi>Q</mi><mi>c</mi></msub></mrow><annotation encoding="application/x-tex">k=-\pi f/Q_c</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.0315em;">k</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="vertical-align:-0.25em;height:1em;"></span><span class="mord">−</span><span class="mord mathnormal" style="margin-right:0.0359em;">π</span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="mord">/</span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-right:0.05em;margin-left:0em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>；</li>
+<li>根据不同中心频率和流逝时间窗计算的尾波<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>c</mi></msub></mrow><annotation encoding="application/x-tex">Q_c</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-right:0.05em;margin-left:0em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>值，拟合<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>c</mi></msub></mrow><annotation encoding="application/x-tex">Q_c</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>值随频率变化的幂函数关系<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>c</mi></msub><mo>=</mo><msub><mi>Q</mi><mn>0</mn></msub><msup><mi>f</mi><mi>η</mi></msup></mrow><annotation encoding="application/x-tex">Q_c=Q_0f^{\eta}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="margin-left:0em;top:-2.55em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="vertical-align:-0.1944em;height:0.8889em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="margin-right:0.05em;top:-3.063em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0359em;">η</span></span></span></span></span></span></span></span></span></span></span></span>求取研究区域的<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">Q_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.1944em;height:0.8778em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-right:0.05em;margin-left:0em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>值和<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>η</mi></mrow><annotation encoding="application/x-tex">\eta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="vertical-align:-0.1944em;height:0.625em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">η</span></span></span></span>值。</li>
+</ol>
+</li>
+<li>
+<p><strong>用于计算<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>c</mi></msub></mrow><annotation encoding="application/x-tex">Q_c</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>的diffTW-Qc脚本：</strong></p>
+<ol>
+<li>
+<p>SAC数据头段变量要求：</p>
+<ul>
+<li><code>evlo</code>: 震源经度 (event longitude)</li>
+<li><code>evla</code>: 震源纬度 (event latitude)</li>
+<li><code>mag</code>: 震级 (magnitude)</li>
+<li><code>o</code>: 发震时刻标记 (origin time marker)</li>
+<li><code>b</code>: 记录开始时间 (begin time)</li>
+<li><code>t1</code>: P波到时标记 (P-wave arrival time)</li>
+<li><code>delta</code>: 采样间隔 (sampling interval)</li>
+</ul>
+</li>
+<li>
+<p>环境要求：（pyhton环境）</p>
+<ul>
+<li>
+<pre><code class="language-python">  pip install numpy obspy
+</code></pre>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<h2>5 处理日志</h2>
+<ul>
+<li>
+<p><span style="color:blue;font-weight:bold">1记</span> <em>往日 ~ 2025年10月7日</em>：了解了解地震学？没学什么东西，下载了一点文献，拷贝了点数据。</p>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">2记</span> <em>2025年10月8日 ~ 2025年11月16日</em>：<sub>此期间基本没什么实际进展，算是玩去了。</sub></p>
+<ul>
+<li>基本掌握了<strong>地震尾波衰减的波形处理流程</strong>；
+<ul>
+<li>整理了姜秀璇和梁钊城留下来的杂七杂八的数据处理脚本文件，并开始尝试<strong>利用AI工具对部分必要的脚本进行重写</strong>；</li>
+<li>将主动源数据进行<strong>入库处理</strong>（入库方法介绍已详细撰写在<code>ZDY</code>文件夹下的<code>README.md</code>文档），不然没法提取并使用该数据。入库结果放在<code>ZDY21-24</code>文件夹下，重要的是自动生成的<code>archive.sta</code>归档文件，在后续的提取波形阶段必需该归档文件；</li>
+<li>开始进行<strong>数据提取</strong>，提取结果放置在<code>GetData</code>文件夹下（提取方法介绍已详细撰写在该文件夹下的<code>README.md</code>文档）
+<ul>
+<li>该阶段撰写了用于<strong>地震事件时间格式转换</strong>、<strong>地震波形数据提取</strong>的脚本；</li>
+<li>使用ArcGIS软件从全国地震目录中导出了各个主动源台站100km内的地震事件信息；</li>
+<li>通过数据提取脚本，截取得到了40个主动源台站对应100km内的地震波形数据，数据放置在<code>DataSAC300s</code>文件夹下。</li>
+</ul>
+</li>
+<li>撰写了毕业论文《青藏高原东北缘地区震源机制解与应力场分布特征》的<strong>开题报告</strong>。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">3记</span> <em>2025年11月17日 ~ 2025年11月23日</em>：~数据预处理阶段，工作文件夹为<code>Preprocessing</code>（预处理介绍已详细撰写在该文件夹下的<code>README.md</code>文档）。~周五下午进行了开题答辩！老师给到的反馈是基本没什么问题了。**<em>（2025年12月3日）更正：<em><strong>处于</strong>数据提取</em></em>阶段，工作目录为<code>GatData</code>！</p>
+<ul>
+<li>撰写用于批量修改SAC数据头段变量的脚本，以得到标记<span class="math math-inline">o</span>。</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">4记</span> <em>2025年11月24日 ~ 2025年11月30日</em>：<sub>仍处于数据预处理阶段，预计本周的进度会比较缓慢，大部分时间会给到英语六级的复习。</sub>**<em>（2025年12月3日）更正：<em><strong>处于</strong>数据提取</em></em>阶段，工作目录为<code>GatData</code>！</p>
+<ul>
+<li>
+<p>由于后续计算<span class="math math-inline">Q_c</span>时还需要输出经纬度和震级，所以还需要在头段变量中写入<code>evlo、evla、mag</code>等信息。目前这些信息都存在筛选过的地震目录中，对于地震目录的格式还需要进一步优化以供这一需求的实现。而对于每一个SAC文件的头段变量的写入方式还在考虑中（是在提取数据时逐个写入，还是后续批量写入？）</p>
+<ul>
+<li>*（2025年11月26日下午）*目前已完成修改<strong>用于地震事件时间转换</strong>的脚本<code>convert_events_to_DoY.sh</code>。以<code>zdy01-Evnets.txt</code>转换结果文件为例，<code>2001 003 07 37 41 000 40.45 98.49 2.0 7 0</code>分别表示发震<code>年 年积日 小时 分钟 秒 毫秒 纬度 经度 震级 震源深度 标识符0</code>且分隔符全部为一个空格；</li>
+<li>对于头段变量的修改，我目前的想法是修改<code>getdata_by_station.sh</code>脚本，使用<code>arcfetch</code>提取miniseed数据后不直接批量转换成SAC数据，而尝试一个一个转换成SAC格式并修改头段变量。优点是，在数据提取阶段就已经读取了对应的地震目录信息，此时可以直接写入SAC；</li>
+<li>对于这一需求，目前我的计划是使用<strong>AI工具</strong>来辅助，在提取到miniseed数据后立马转换为SAC数据，并进入<code>sac</code>软件包修改头段变量。*（2025年11月27日下午）*才发现<code>mseed2sac</code>软件包（具体操作方式可见该软件包的使用文档）可以直接通过<code>-E</code>选项直接添加当前转换数据的发震<code>年 年积日 小时 分钟 秒 毫秒 纬度 经度 震源深度</code>，但是对震级信息无法添加，这一信息也许还需考虑如何写入。</li>
+</ul>
+</li>
+<li>
+<p>*（2025年12月28日）<em>目前采用<code>mseed2sac</code>软件包的<code>-E</code>选项的波形数据转换脚本已完成修改，具体写法见脚本<code>getdata_by_station.sh</code>，<strong>后续考虑如何写入震级信息！</strong>（还是采取读取文件名匹配的方式来写入？）</em>（2025年12月2日晚上）*由于现在引入了<code>自动额外输出偏移后的时间</code>这一特性，写入震级这一需求还是可以通过<code>sac</code>软件包来写入（已实现）。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">5记</span> <em>2025年12月1日 ~ 2025年12月7日</em>：~处于数据预处理阶段的尾声，~预计本周的进度会比较缓慢，大部分时间会给到英语六级的复习。<em><strong>虽然在此之前说明处于数据处理阶段，工作目录为<code>Preprocessing</code>，但由于地震目录的更换，数据提取<code>GetData</code>不得不进行返工，本周及之前的工作实际处于数据提取阶段！！！成体系地修改了用于该阶段的两个脚本<code>convert_events_to_DoY.sh</code>和<code>getdata_by_station.sh</code>，并更新了该目录下的<code>READEME.md</code>说明文件！！！</strong></em></p>
+<ul>
+<li>
+<p>依据老师的要求，震级范围完全与姜秀璇师姐选取的大小一致<span class="math math-inline">1.5\le M \le 5.1</span>，目前我只有2.0以上的地震目录，这一信息还需和老师信息说明。*（2025年12月2日下午）*向老师索取并拿到了<strong>研究区内2020年2025年的<span class="math math-inline">M\le 5.0</span>的地震目录</strong>（只需要2021年至2024年全年的地震目录即可），现再次根据各个台站100km内为条件进行地震事件的筛选。为方便后续研究的数据使用（用以求取震源机制解），在完成尾波衰减这一内容后，需要“<em>将<span class="math math-inline">M \ge 4.0</span>级以上地震波形资料保存好</em>”；</p>
+</li>
+<li>
+<p>当前需要考虑一个问题。在转换世界时如果多减去10s，那么使用<code>-E</code>选项添加<code>o</code>会变得麻烦（需要额外考虑到是否跨60s）。考虑，是否可以在转换世界时的输出中同时包含多减和不减的时间，以供<code>mseed2sac</code>软件包使用？*（2025年12月1日晚上）<em>该需求已得到实现，<code>convert_events_to_DoY.sh</code>脚本在使用<code>-t</code>选项来偏移时间时会自动额外输出偏移后的时间<code>year doy doy_hour doy_min doy_sec jday hour min sec msec evla evlo mag evdp extra</code>。</em>（2025年12月2日下午）*通过该额外输出发震时刻，在使用<code>mseed2sac</code>软件包转换格式时，可以准确当前的文件的发震时刻了 ；</p>
+</li>
+<li>
+<p>由于地震目录文件内容格式的修改，<code>getdata_by_station.sh</code>脚本当中读取该文件的方式也应注意。*（2025年12月2日晚上）*通过<code>sac</code>软件包在该数据提取脚本中集成了<strong>在SAC文件头段变量写入震级信息mag的能力</strong>；</p>
+</li>
+<li>
+<p>*（主动源数据问题）*目前发现，<strong>zdy13</strong>台站编号<code>BA70</code>在2021到2024年并没有任何数据。<strong>zdy36</strong>台站的miniseed数据转换出来的SAC格式名不是默认的<code>XX.ZDY36.*</code>而是<code>XX.ZDY.*</code>（缺少台站的序号36）这一点需要注意（经查询，姜秀璇师姐的主动源数据文件夹<code>36</code>下也存在这一问题）；</p>
+</li>
+<li>
+<p>尝试在<code>sac</code>软件中使用<code>ppk</code>进行P波震相拾取，标记为<span class="math math-inline">T_1</span>，其余处理见<em><strong>疑问5</strong></em>。同时进行波形筛选，差的波形标记<span class="math math-inline">T_9</span>，但是目前我对筛选的条件还比较模糊（需和老师进行沟通）。最后针对<strong>zdy01</strong>台站下部分震相拾取结果进行了<span class="math math-inline">Q_c</span>计算测试，发现<span class="math math-inline">Q_c</span>值确实与LTW呈显著的正相关，故提出了<em><strong>疑问7</strong></em>；</p>
+</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">6记</span> <em>2025年12月8日 ~ 2025年12月14日</em>：正式进入<strong>数据处理</strong>阶段，工作目录位于<code>Preprocessing</code>并进行小范围测试计算<span class="math math-inline">Q_c</span>值<code>PyQc(byQQL)</code>。主要工作内容为P波震向拾取和使用**<code>DiffTW-Qc</code>**脚本计算<span class="math math-inline">Q_c</span>值。</p>
+<ul>
+<li>在进行震相拾取之前，还应进行去均值、去线性趋势和波形尖灭<code>rmean; rtr; taper</code>，而去仪器响应在本研究中是非必要的操作，故不进行<code>transfer</code>处理——使用脚本<code>preprocess_sac.sh</code>即可；</li>
+<li>在进行震相拾取时，似乎振幅量级在大于**<span class="math math-inline">10^3</span>**得情况下比较好，目前建议优选该类量级的波形进行计算<span class="math math-inline">Q_c</span>值
+<ul>
+<li>在使用脚本计算<span class="math math-inline">Q_c</span>值时，有个SAC别文件可能会因<code>mseed2sac</code>自动输出的文件名不匹配等问题，造成头段变量中没有写入震级信息，此时需要手动写入；</li>
+</ul>
+</li>
+<li>*（2025年12月11日晚上）*有些事情😊暂时告一段落吧，继续准备英语六级和硕士研究生的学习任务。</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">7记</span> <em>2025年12月15日 ~ 2025年12月21日</em>：继续<strong>数据处理</strong>阶段（P波震相拾取），工作目录位于<code>Preprocessing</code>。</p>
+<ul>
+<li>在利用<code>ppk</code>拾取P波到时时，请注意，截取的波形总时长和P波到时的时间倍数关系！比如截取200s的波形，如果P波到时在90s，则无法计算尾波，因为计算<span class="math math-inline">2\sqrt{3}(T_p-T_o)</span>的时长已经超出；</li>
+<li>开始思考如何拟合<span class="math math-inline">Q_c</span>对频率的依赖关系式，详细内容可见后续的**<code>**如何拟合频率依赖关系</code>**一节；</li>
+<li>本周在进行P波震向拾取时，从<code>zdy12</code>的数据开始，将会采用<strong>更加激进的拾取策略（只关注该次地震波形的总体质量）</strong>；</li>
+<li>*（2025年12月18日下午）*截至目前，只完成了14个主动源台站数据的震相拾取，但是考虑到后续还有数千个波形数据仍需拾取，可以在后续工作中尝试使用<strong>机器学习、深度学习等方式方法</strong>来批量自动进行震向拾取；</li>
+<li>*（2025年12月19日下午）*发现<code>zdy16</code>这一台站下截取的数据，绝大部分的波形质量都比较差，怯于拾取震相并使用。而与之形成鲜明对比的是<code>zdy17</code>的数据，以至于几乎每一个波形数据的质量都非常好😯；</li>
+<li><em>（2025年12月21日晚上）</em>：截至目前，已经处理了21个主动源台站的数据。</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">8记</span> <em>2025年12月22日 ~ 2025年12月28日</em>：继续<strong>数据处理</strong>阶段（P波震相拾取），工作目录位于<code>Preprocessing</code>。</p>
+<ul>
+<li>*（2025年12月23日下午）*主动源<code>zdy35</code>到<code>zdy40</code>这6个台站的数据过多（基本上每个台站被截取出来的记录都有1400条左右），预计这一周应该只能标记完这些内容；</li>
+<li><em>（2025年12月24日下午）<em>对于一些截取出来的200s波形数据，<strong>在同一条波形中有两个甚至以上个数的地震记录</strong>，比如在<code>zdy35</code>的2022年第7和第8日就有大量的多地震波记录，这一情况下应该如何处理？同</em></em><em>疑问8</em>**；</li>
+<li>*（2025年12月25日下午）*截至目前，对于主动源数据的P波震相拾取的工作内容已完成<strong>37/40</strong>，后续3个台站还有大约3400条波形记录资料，只能预计在本周结束之前完成处理；</li>
+<li>*（2025年12月27日下午）*截至目前，2021年至2024年40个主动源台站的<span class="math math-inline">M \ge 1.5</span>地震波形资料<strong>已全部完成P波拾取</strong>，需要注意的是<code>zdy13</code>这一台站在此期间没有任何的数据资料！</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">9记</span> <em>2025年12月19日 ~ 2026年1月4日</em>：<strong>计算地震尾波的<span class="math math-inline">Q_c</span>值</strong>，工作目录位于<code>PyQc(byQQL)</code>。</p>
+<ul>
+<li>本周预计会和老师讨论一下接下来数据处理以及测试数据的<span class="math math-inline">Q_c</span>值计算结果！后续工作预计会接续姜秀璇师姐已完成的部分；</li>
+<li>*（2025年12月30日上午）*由于暂时还未找到姜秀璇师姐之前计算得到的<span class="math math-inline">Q_c</span>结果文件，故需要根据她留下来的波形数据重新计算<span class="math math-inline">Q_c</span>值。与之前我处理的波形数据不同的是，师姐没有对SAC数据写入<code>elvo、evla、mag</code>头段变量，并且其对P波到时采用<code>t0</code>标记。在完成对此类不同情况的<code>PyQc</code>代码修改后，已成功计算出遗留下来的地震波形数据<span class="math math-inline">Q_c</span>值，筛选条件依然为<span class="math math-inline">co \le -0.6</span>并且<span class="math math-inline">SNR \ge 3</span>；</li>
+<li><em>（2025年12月31日下午）</em> <span style="color: brown;font-weight:bold">准备跨年，2026，新年快乐！</span></li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">10记</span> <em>2026年1月4日 ~ 2026年1月11日</em>：~开始使用最小二乘法进行拟合。~由于在此期间发现了诸多用于计算<span class="math math-inline">Q_c</span>值脚本的小问题，所以需要返工<strong>计算地震尾波的<span class="math math-inline">Q_c</span>值</strong>，工作目录位于<code>PyQc(byQQL)</code>以及<code>PyQc(byJXX)</code>。</p>
+<ul>
+<li>
+<p>*（2026年1月4日上午）*经多次计算测试，发现本次P波震相拾取的<span class="math math-inline">Qc</span>值结果偏低过多，需要审视一下往日的<strong>拾取策略</strong>，并对之前拾取的波形数据进行审查！目前记录一下可能导致该问题的：</p>
+<ul>
+<li>之前<em><strong>7记</strong></em>中的<code>更加激进的拾取策略</code>是不恰当的，必须理应仅保留P波到时明显的波形；</li>
+<li>针对200s内有多个地震波形记录的情况，理应舍弃该次波形记录；</li>
+</ul>
+</li>
+<li>
+<p><em>（2026年1月4日下午）<em>经过仔细的代码审查发现，我复写的<code>diffTW-Qc.py</code>脚本（依据往日的脚本进行重构复现）中，<strong>关于计算SNR的部分算法不适用于当前主动源台站裁切出来的波形数据</strong>！虽然我之前对该脚本进行了测试，结果显示该脚本是可信的，但是用于测试的数据是往日数据的时间格式，没有发现该问题。现如今我自己处理数据的时间格式发生了变化，所以很大可能是由于该问题导致了我上午发现的</em></em><span class="math math-inline">Q_c</span>值**偏低过多的问题：</p>
+<ul>
+<li>
+<p>数据问题：往日数据裁切后的发震时刻<code>o</code>为0秒，则数据开始时间点<code>b</code>则为-10秒，而如今我裁剪出来的数据发震时刻<code>o</code>默认为10秒，则数据开始<code>b</code>为0秒；</p>
+</li>
+<li>
+<p>算法问题：往日在其数据时间格式下，会减去一个开始时间<code>b</code>的-10（即加上10秒），但如今我的开始时间<code>b</code>是0秒，无法得到尾波开始时间点；</p>
+</li>
+<li>
+<p>解决方案：目前尝试对计算<span class="math math-inline">SNR</span>和<span class="math math-inline">Q_C</span>的算法进行修改，但目前还无法保证会对后续计算产生未知的其他影响（理论上不会）。</p>
+<ol>
+<li>
+<p>撰写新的脚本对SAC数据进行时间上的转换，使之与姜秀璇师姐处理得到的数据时间格式一致；</p>
+</li>
+<li>
+<p>对当前用于计算<span class="math math-inline">SNR</span>和<span class="math math-inline">Q_C</span>的算法部分进行修改，使之能够匹配上尾波的开始时间节点。</p>
+<pre><code class="language-python">### 请注意，此处展示的对比仅是往日代码的修改示例
+########仅需要关注式中o和b的加减关系#########
+# 原有用于计算SNR的部分代码（相对于o）
+te1 = 2 * (tr11.stats.sac.t0 - tr11.stats.sac.o) - tr11.stats.sac.b + 20 - 5 # 疑问9：此处标记到时使用错误
+# 修改时间基准后的计算SNR代码（相对于b）
+te1 = (tr11.stats.sac.o - tr11.stats.sac.b) + 2 * (tr11.stats.sac.t0 - tr11.stats.sac.o) + 20 - 5 # 疑问9：此处标记到时使用错误
+# 应用到当前，现在o的值为10而b是0，所以得修改相对时间
+coda_end_time = (2 * S_WAVE_FACTOR * (trace_for_analysis.stats.sac.t1 - trace_for_analysis.stats.sac.o) + trace_for_analysis.stats.sac.o + CODA_WINDOW_LENGTH - CODA_TAIL_OFFSET) # 疑问9：正确计算方法
+
+# 原有用于计算Qc的部分代码（相对于o）
+ts2_i = 2 * 1.732 * (t0 - o) - b + Lslidewindow * (i - 1)
+# 修改时间基准后的计算Qc代码（相对于b）
+ts2_i = (o - b) + 2 * 1.732 * (t0 - o) + Lslidewindow * (i - 1)
+# 应用到当前，现在o的值为10而b是0，所以得修改相对时间
+window_start_time = (2 * S_WAVE_FACTOR *(trace_for_analysis.stats.sac.t1 - trace_for_analysis.stats.sac.o) + trace_for_analysis.stats.sac.o + slide_window_length * window_index)
+</code></pre>
+<p>请注意，此处有两个与往日代码算法不一致的地方：</p>
+<ul>
+<li>在计算<span class="math math-inline">SNR</span>时，往日直接采用P波到时的两倍，而在当前则是2倍S波到时（2倍根号3）；</li>
+<li>在计算<span class="math math-inline">Q_c</span>时，往日代码采用<code>i-1</code>进行索引，而当前则直接使用全部索引（不减1）。</li>
+</ul>
+<p>后续再有问题的情况下，需要回溯这一部分的计算实现，此处标记为<em><strong>疑问9</strong></em>。</p>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>
+<p>*（2026年1月5日上午）*通过使用上述示例修改得到的<code>diff-Qc-v3.1.py</code>脚本，重新计算了我处理的40个主动源台站数据的<span class="math math-inline">Q_c</span>值；</p>
+</li>
+<li>
+<p><em>（2026年1月6日下午）<em>需要修正往日代码中对于计算信噪比<span class="math math-inline">SNR</span>时，最后5秒尾波的python代码的走时错误！问题说明详情请查看</em></em><em>疑问9</em>**。</p>
+</li>
+<li>
+<p>*（2026年1月9日上午）*为确保后续研究工作中对<span class="math math-inline">Q_c</span>值计算方法的完全理解，于今日起开始对用于计算脚本的新一轮审查。对于重构的计算脚本<code>diffTW-Qc-old.py</code>，利用往日的数据复现数据结果，显示完全一致，通过初步审查。以下是需要特别注意的点：</p>
+<ul>
+<li>师兄师姐在<strong>计算震前噪声前5秒数据段</strong>的时候，理应是使用P波到时前5秒，但是在实际代码计算中却使用的是发震时刻o的前5秒。此处需要修改成<strong>使用P波到时前5秒</strong>，但实际均值计算中的影响不会特别大，可能误差范围在可接受范围内，但<span class="math math-inline">Q_c</span>均值会比之前的结果更小（<span class="math math-inline">SNR</span>小得多）；<span style="color:red">✔已完成修正到<code>diffTW-Qc.py</code>！</span></li>
+<li>师兄师姐在<strong>计算<span class="math math-inline">SNR</span>信噪比最后5秒的python代码处应当采用<code>当前则是2倍S波到时（2倍根号3）</code>这一原则</strong>，师兄师姐他们在此处有一个错误，需要注意！正确地采用**2倍根号3的P波走时(即2倍S波走时)**来计算信噪比，会比错误地采用~2倍P波走时~得到的符合筛选条件的记录少。这是因为错误地采用~2倍P波走时~时，用于计算信噪比的波记录大概率并不在尾波时间窗之内，导致这样得到的<span class="math math-inline">SNR</span>偏大，即同等筛选条件下（<span class="math math-inline">SNR\ge 3</span>）的记录会偏多；<span style="color:red">✔已完成修正到<code>diffTW-Qc.py</code>！</span></li>
+<li>师兄师姐往日的数据<strong>时间参考格式</strong>与我现在处理得到的数据参考格式不同，计算脚本需要小范围修改时间参考部分的代码。<span style="color:red">✔已完成修正到<code>diffTW-Qc-v3.1.py</code>！</span></li>
+</ul>
+</li>
+<li>
+<p>*（2026年1月9日晚上）*目前已完成对所有数据的<span class="math math-inline">Q_c</span>值计算，修改前后的<span class="math math-inline">Q_c</span>均值变化不大，但这几天的工作非常重要，修正了往日的部分不当的地方！</p>
+</li>
+<li>
+<p>预计本周结束前完成对所有数据的<span class="math math-inline">Q_c</span>值计算，并在下周开始进行拟合。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">11记</span> <em>2026年1月12日 ~ 2026年1月18日</em>：上周调整并完成了对所有数据的<span class="math math-inline">Q_c</span>值计算（存储目录位于<code>PyQc/PyQc(byQQL)</code>以及<code>PyQc/PyQc(byJXX)</code>），预计继续在该工作目录下完成对<span class="math math-inline">Q_c</span>数据的的拟合。</p>
+<ul>
+<li>
+<p>*（2026年1月12日上午）*通过整理所有数据的当前<span class="math math-inline">Q_c</span>计算值来看，我处理并得到的40个主动源数据的<span class="math math-inline">Q_c</span>值在3个时间窗下的<span class="math math-inline">Q_c</span>均值有以下情况：</p>
+<ul>
+<li>
+<p><strong>低频值</strong>稍微偏低（比如中心频率为1.5Hz时，通过师姐的数据计算得到三个时窗下的<span class="math math-inline">Q_c</span>均值分别约为95、118、147，而我的数据约为89、122、152）；</p>
+</li>
+<li>
+<p><strong>中间频率</strong>的<span class="math math-inline">Q_c</span>均值基本一致；</p>
+</li>
+<li>
+<p><strong>高频值</strong>基本一致，但与前人研究（参考姜秀璇和梁钊城）的结果（高频下的<span class="math math-inline">Q_c</span>均值在三个时窗下都在2100左右）相比，而我计算得到均值仅约1800左右；</p>
+</li>
+<li>
+<p>***小记：***虽存在多处数据的情况不一致，但在考虑前人在计算信噪比<span class="math math-inline">SNR</span>时出现的错误，仍应坚持自己的数据计算结果。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>*（2026年1月12日下午）*准备拟合各流逝时间窗下尾波<span class="math math-inline">Q_c</span>值随频率变化的幂函数关系：</p>
+<ul>
+<li>拟合前的数据是否还需要清洗，比如除去三倍标准差的<span class="math math-inline">Q_c</span>值？</li>
+<li>利用脚本<code>Qc-fitting.py</code>已完成<span class="math math-inline">Q_c</span>值关于频率依赖的函数拟合，且结果比较合理的；
+<ul>
+<li>20s：<span class="math math-inline">Q_c=\left(75.9\pm11.5\right)f^{\left(1.04\pm0.06\right)}</span>，<span class="math math-inline">R^2=0.982</span>；</li>
+<li>30s：<span class="math math-inline">Q_c=\left(105.0\pm16.9\right)f^{\left(0.93\pm0.07\right)}</span>，<span class="math math-inline">R^2=0.976</span>；</li>
+<li>40s：<span class="math math-inline">Q_c=\left(132.0\pm20.0\right)f^{\left(0.87\pm0.06\right)}</span>，<span class="math math-inline">R^2=0.974</span>；</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><em>（2026年1月14日上午）<em>学习了如何通过<strong>地震射线</strong>路径使用<strong>克里金插值法</strong>来获取研究区二维<span class="math math-inline">Q_c</span>值空间分布图，详见</em></em><code>*** 如何使用克里金法进行空间插值</code>**一节。目前我对改内容的实施步骤比较清楚，但认为其比较繁琐，特别是关于<code>得到数千条地震记录的地震射线，并由此线转点要素</code>。</p>
+<ul>
+<li>对于地震射线的获取，首先需要台站和震中的经纬度信息。目前我处理的数据关于此信息在结果和过程SAC文件中均有写入，而姜秀璇处理得到的SAC数据中暂无震中的经纬度信息，后续可能还需了解梁钊城是如何实现这一部分的内容；</li>
+<li>对于克里金插值法各个参数的设置，梁钊城虽有提到，但无对其的详细解释。</li>
+</ul>
+</li>
+<li>
+<p>*（2026年1月15日下午）*工作目录为<code>RayPaths</code>，针对我处理得到的数据撰写用于获取<code>台站-震源</code>射线路径的经纬度脚本文件。以<span class="math math-inline">Q_c</span>结果文件<code>QcResult.txt</code>（包含震源信息）为主表，循环每一行，从文件名中解析出“台站代码”，然后去<code>StationInfo.csv</code>（台站信息）中查找对应的经纬度，最后将“台站坐标”与“震源坐标”拼接到同一行。</p>
+</li>
+<li>
+<p>*（2026年1月16日上午）*对梁钊城的处理过的数据进行查看，尝试学习其是如何使用克里金插值法来获取二维<span class="math math-inline">Q_c</span>值空间分布图的。很遗憾，并未通过该方式得到比较详细的操作步骤，仅找到了其使用的地震射线数据，而其论文中的插值结果栅格图没有找到。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">12记</span> <em>2026年1月19日 ~ 2026年1月25日</em>：继续探索<span class="math math-inline">Q_c</span>值二维图像化的操作办法。</p>
+<ul>
+<li><em>（2026年1月19日下午）<em>为了解决直接使用点插值出来的结果有射线路径的迹象，应该创建<strong>渔网</strong>来对同一区域内的采样点进行均值化，从而消除了射线路径点的大权重反演影响。详细操作办法请见</em></em><code>*** 如何使用克里金插值法进行空间插值</code>**一节，<span style="color:red">当前时间节点下，我对二维空间化<span class="math math-inline">Q_c</span>值的操作步骤已经基本掌握，但是似乎还有相关数据量的问题</span>。</li>
+<li>*（2026年1月20日下午）*根据目前已有的数据情况来看，<span style='color:gray;font-weight:bold'>姜秀璇处理后的SAC数据中没有台站和震中的经纬度信息</span>，我也没有其使用的地震事件目录，这对后续二维图像化<span class="math math-inline">Q_c</span>值工作是一个问题。当前我仅对2021至2024年主动源40个台站的数据有处理结果，显然这是不足够的。为了弥补当前数据量的不足，<span style="color:green;font-weight:bold">开始对固定台站的数据进行处理</span>：
+<ul>
+<li>时间范围为<strong>2021年1月1日至2024年12月31日</strong>；</li>
+<li>研究区内的台站数量大约有100个，但在我拿到的地震目录以及<code>筛选100km内的地震事件</code>两个限制下，有地震数据的台站为59个（目前已完成对各个台站的地震事件筛选）；</li>
+<li>目前我对该数据处理的流程是比较熟悉的，唯一有所顾虑的数据存储问题。当前存储条件下，固定台4年的总数据（SEED格式）大小为<strong>4TB左右</strong>，但从该数据格式转换到SAC数据格式后，<span style="color:red">需要更多的存储空间</span>；</li>
+</ul>
+</li>
+<li><em>（2026年1月21日下午）</em> <strong>开始准备从固定台站进行对应时段波形数据的提取</strong>，工作目录位于<code>GDT/</code>：
+<ul>
+<li>
+<p>由于该类台站数据的提取方式有所不同，故新建了<span style="color:green;font-weight:bold">用于该SEED数据提取的地震目录格式转换脚本<code>convert_format.sh</code></span>，转换输出<span style="color:Peru">北京时间、GMT时间、用于裁剪记录的秒数、震级和震源深度</span>；</p>
+</li>
+<li>
+<p>固定台站的原始数据位于<code>/2021、/2022、/2023、/2024</code>四个文件夹下，数据格式为SEED格式。<sub>预计使用<code>mseed2sac</code>工具将其转换为SAC格式，此时不使用<code>rdseed</code>工具原因为“不需要仪器响应文件，且我对mseed2sac软件包更加熟悉”</sub>*（2026年1月21日下午）*决定使用<code>rdseed</code>工具包，为之前的偷懒行为感到尴尬😜；</p>
+</li>
+<li>
+<p>针对该SEED数据使用时<code>mseed2sac</code>软件包的操作建议如下：</p>
+<ul>
+<li>亦如之前处理主动源数据，<span style="color:brown;font-weight:bold">在转换数据时将地震事件进行写入头段变量（使用<code>-E</code>选项）</span>，请注意在此处使用的是GMT格林威治标准时间的年年积日时分秒/经纬度；</li>
+<li>使用<code>mseed2sac</code>工具成功转换成SAC数据后，<span style="color:brown;font-weight:bold">只保留<code>BNZ</code>垂直通道</span>，删除其他两个通道的SAC数据（此处需要考虑的时如何识别处转换后的SAC文件，因为默认命名与匹配的时间有较大的差距），以减少数据存储的压力；</li>
+<li>立即使用<code>sac</code>软件包对该SAC数据<span style="color:brown;font-weight:bold">进行必要的头段变量的修改</span>，包括但不仅限于发震时刻<span class="math math-inline">o</span>（GMT格林威治标准时间）、震级<span class="math math-inline">mag</span>的修改；</li>
+<li>然后立即使用<code>sac</code>软件包<span style="color:brown;font-weight:bold">对数据进行裁剪</span>，使用<code>cut o -10 200</code>命令读取该SAC文件，使用<code>ch allt (0 - &amp;1,b&amp;) iztype IB</code>修改数据的相对时间，使用<code>rmean; rtr; taper</code>命令对数据进行简单的预处理，使用<code>w "$newname"</code>对数据进行重命名写入。</li>
+</ul>
+</li>
+<li>
+<p>在AI工具的协助下，撰写了<span style="color:green;font-weight:bold">用于从SEED数据提取并处理的~python脚本<code>convert_seed_to_sac.py</code><sub>和~bash脚本<code>convert_seed_to_sac.sh</code></sub>（已被移除或修改）</span>：</p>
+<ul>
+<li>
+<p>完全实现了上条记录中的<strong>操作建议</strong>，比如使用<code>-E</code>选项、仅保留<code>BHZ</code>垂直通道、头段变量的修改以及数据的裁剪和简单预处理；</p>
+</li>
+<li>
+<p><strong>由于SEED数据内部的数据可能会出现各类问题</strong>：</p>
+<ul>
+<li>问题：没有任何数据，或者有成百上千个甚至数万个多个小段的数据；</li>
+<li><sub>说明：目前针对多个小段的数据（非完整的数据），我的想法是直接舍去，此类数据处理起来似乎比较麻烦；</sub></li>
+<li><sub>解决方案：python脚本则会直接跳过该类数据（设置了超时阈值），而bash脚本会一直卡在这一进程（不建议使用，除非保证数据完整）。</sub></li>
+</ul>
+</li>
+<li>
+<p>经过测试，<span style="color:red;font-weight:bold">还是决定使用<code>rdseed</code>工具来对数据进行转换</span>，缘由是<span style="color:green;font-weight:bold">该工具直接支持对SEED格式下内部多段数据的合并，并且同等情况下比<code>mseed2sac</code>工具的读写速度更快</span>，开始对先前的脚本进行修改bash脚本<span style="color:red;font-weight:bold"><code>extract_seed_to_sac.sh</code></span>，预计移除python脚本：</p>
+<ul>
+<li><code>rdseed</code>软件包的使用为<span style="color:red;font-weight:bold"><code>rdseed -f data.seed -d -o 1 -b 5000000000</code></span>，使用<code>-b</code>参数将缓冲区设大的情况下，<code>rdseed</code>直接合成完整的SAC数据；</li>
+<li>如果多段数据之间有实际的时间中断（例如机器重启、数采丢包），<code>rdseed</code>不会自动补零或插值来强行合并它们，则需要使用<code>sac</code>软件包<strong>先读取所有该通道的SAC数据</strong>，<strong>再合并</strong><span style="color:red;font-weight:bold"><code>merge gap zero overlap average</code></span>，<strong>最后写入到SAC文件</strong>（该情况下，输出的SAC数据文件名在毫秒处为<code>0000</code>，以此与正常数据有一定的区分度）；</li>
+<li>最后对唯一的垂直分量<code>BHZ</code>数据（不论是<code>rdseed</code>软件包默认合成的SAC，还是我使用<code>sac</code>软件包手动均值融合的SAC文件）进行<strong>写入头段变量</strong>（此处需包括地震事件的发震GMT时间<span class="math math-inline">o</span>、经纬度<span class="math math-inline">evla/evlo</span>和震级<span class="math math-inline">mag</span>）和<strong>数据基本处理</strong>（裁剪-10 ~ 200的波形、时区校正<code>ChnHdr ALLT v</code>和去均值、去线性趋势以及波形尖灭<code>rmean; rtr; taper</code>）。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>*（2026年1月22日上午）*当前运行用于提取固定台数据的脚本<code>extract_seed_to_sac.sh</code>大概需要5 ~ 6小时，所幸经过一晚上的运行，<code>GDT/DataSAC</code>文件下的数据已全部提取（预计使用59个台站，约20000条地震记录），文件大小约为1.8GB。从今日起再次开启<strong>对固定台数据的P波初动标记</strong>：
+<ul>
+<li><code>GS.BYT</code>台站附近是很多地震的震源中心吗？多数波形记录在发震后几秒就观测到了P波初至；</li>
+<li>由于筛选的是100km范围的地震记录，仅标记保留**P波初动在35秒之前（一般在30秒之前）**的波形数据；</li>
+<li>*（2026年1月23日下午）*截至目前，还剩下约5400条地震波形记录未进行标记，<span style="color:brown;font-weight:bold">预计在本周结束之前完成该项任务，并使用<code>diffTW-Qc-v3.1.py</code>脚本计算固定台站所有数据的<span class="math math-inline">Q_c</span>值</span>。</li>
+</ul>
+</li>
+<li>*（2026年1月25日下午）*本周周日下午4点左右，完成对固定台站数据的P波标记，最终选取标记了7000多条地震记录用于计算<span class="math math-inline">Q_c</span>值，总结一下目前的研究情况：
+<ul>
+<li>截至目前，我<span style="color:green;font-weight:bold">拥有三类数据用于青藏高原东北缘地区的地震尾波衰减研究</span>，分别是我处理的<strong>40个主动源台站数据（2021 ~ 2024）</strong>、<strong>59个固定台站数据（2021 ~ 2024）<strong>和姜秀璇处理得到很</strong>多个台站的数据（2000 ~ 2020，实际我仅拿到了约4000多条可用于计算的数据）</strong>；</li>
+<li>对于尾波衰减的研究，依据上述三类数据，按计划实现两种结果：
+<ol>
+<li>对该研究区计算出不同时间窗下各个频率的<span class="math math-inline">Q_c</span>平均值，并使用最小二乘法拟合<span style="color:red;font-weight:bold"><span class="math math-inline">Q_c</span>值对频率的依赖关系式</span>；</li>
+<li>根据上万条符合要求的地震记录计算得到的<span class="math math-inline">Q_c</span>值，按地震射线路径，使用克里金插值法得到<span style="color:red;font-weight:bold">研究区的<span class="math math-inline">Q_c</span>值空间分布图</span>。</li>
+</ol>
+</li>
+<li>针对上述两种研究结果，预计在下一周完成！</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">13记</span> *（2026年1月26日 ~ 2026年2月1日）*预计这一周为本学期的倒数第二周，并正式进入研究结果阶段（2021至2024年的地震波形数据已全部处理完毕）：</p>
+<ol>
+<li>已全部计算✔<span style="color:green;font-weight:bold">不同时间窗下各个频率的<span class="math math-inline">Q_c</span>平均值</span></li>
+<li>已全部拟合✔<span style="color:green;font-weight:bold"><span class="math math-inline">Q_c</span>值对频率的依赖关系式</span></li>
+<li>正在探索……<span style="color:green;font-weight:bold">📊研究区的<span class="math math-inline">Q_c</span>值空间分布图</span></li>
+</ol>
+<ul>
+<li>*（2026年1月28日上午）*本周前两日开始使用克里金插值法来获取研究区的<span class="math math-inline">Q_c</span>值空间分布图，但我觉得效果较差，插值出来的空间分布图的地震射线路径还是比较明显（即使已经尝试通过渔网来均值化局部区域的<span class="math math-inline">Q_c</span>值）。<span style="color:brown;font-weight:bold">根据老师的建议，将研究区缩小到主动源台站覆盖的范围。</span></li>
+<li><em>（2026年1月29日下午）<em>在AI工具的帮助下，“<strong>如何使用普通克里金进行空间插值</strong>”的参数设置有了进一步的理解，相关内容预计将写入</em></em><code>*** 如何使用克里金法进行空间插值</code>**一节的最后。</li>
+<li>*（2026年1月30日下午）*为方便后续克里金插值时使用三个流逝时窗下不同频率的<span class="math math-inline">Q_c</span>值，我通过使用ArcGIS的模型构建器创建了一个直接生成用于插值的一键化工具，主要简化了一下工作内容：
+<ul>
+<li><strong>按频率筛选</strong>数据（每个时窗下都有7个频率需要进行处理）；</li>
+<li><strong>生成射线路径</strong>（XY转线并投影到WGS84-UTM47N）；</li>
+<li><strong>空间采样与降噪</strong>（沿线生成点，然后使用特定大小的渔网平均，最后要素转点）。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">14记</span> <em>（2026年2月2日 ~ 2026年2月8日）<em>本周为本学期最后一周，预计于</em>2月7日</em>回家，因而小论文发表任务只能被推迟到春节之后。<span style="color:green">BGM: Never Letting Go</span></p>
+<ul>
+<li>*（2026年2月6日）*明天就出发回家，今天将抽出时间对目前已完成的工作内容进行整理。
+<ol>
+<li>所有台站的<strong>尾波<span class="math math-inline">Q_c</span>值结果</strong>文件均只保存在<code>D:\Desktop\matterMaster\Qiulin,Qin\</code>文件夹当中，其中<code>4-地震尾波衰减</code>文件夹存放了关于<span class="math math-inline">Q_c</span>值<strong>拟合结果</strong>和所有台站的地震射线路径及其<strong>对应脚本</strong>；</li>
+<li>预计所有的<strong>波形数据</strong>均只存放在桌面硬盘，由于该硬盘不方便携带，预计不会被我带回；</li>
+<li>应用于GIS程序的工程文件夹均存放在<code>D:\Desktop\matterMaster\Qiulin,Qin\</code>当中的<code>研究区工程</code>文件夹当中。目前该文件夹存有插值、地震目录选择等<strong>三个工程</strong>；</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+<ul>
+<li>
+<p><span style="color:blue;font-weight:bold">15记</span> *（2026年3月6日 ~ 2026年3月8日）*本周为研二秋季学期的第零周，春节一个月约等于什么也没干。</p>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">16记</span> <em>（2026年3月9日 ~ 2026年3月15日）本周为研二秋季学期的第一周</em></p>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">17记</span> *（2026年3月16日 ~ 2026年3月22日）*本周为研二秋季学期的第二周，希望这周我的小论文初稿能有较大的进展。<span style="color:green">BGM: Taki - Yuma.Play</span></p>
+<ul>
+<li>通过AI（主要是Gemini）检索了解到，关于<span style="color:red;font-weight:bold">地震尾波成像这块最好还是使用<span class="math math-inline">Q_c^{-1}</span></span>这一可线性叠加的值来进行研究比较合理，详细见<em><strong>疑问10和11</strong></em>；</li>
+<li>对部分以前的工作进行了修改，例如<em><strong>如何拟合频率依赖关系</strong></em>这一部分的工作内容中，旧有的使用<span class="math math-inline">Q_c</span>这一错误的数据计算部分重写成了<span class="math math-inline">Q_c^{-1}</span>值的倒数利用，包括使用其计算得到的均值和标准差；</li>
+<li>准备修改用于流程化计算<span class="math math-inline">Q_c^{-1}</span>的ArcGIS建模工具箱；</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">18记</span> *（2026年3月23日 ~ 2026年3月29日）*本周为研二秋季学期的第三周，预计本周完成小论文的初稿撰写。</p>
+<ul>
+<li>
+<p><em>（2026年3月23日下午）<em>梳理一下目前关于<strong>地震尾波衰减</strong>研究中</em></em><span class="math math-inline">Q_c</span>和<span class="math math-inline">Q_c^{-1}</span>的使用**进行简单说明：</p>
+<ol>
+<li>
+<p>对于<span style="color:red;font-weight:bold">20-s LTW、30-s LTW和40-s LTW下各中心频率点所对应的尾波<span class="math math-inline">Q_c</span>值</span>，目前该均值指的是对数均值，后续建议加上样本量的统计；</p>
+<blockquote>
+<p><em><strong>参考文献 1：直接支持“对数平均”在尾波<span class="math math-inline">Q</span>参数中的应用</strong></em></p>
+<ul>
+<li><strong>文献信息：</strong> Zhang, F., &amp; Papageorgiou, A. S. (2010). Attenuation characteristics of Taiwan: Estimation of coda Q, S-wave Q, scattering Q, intrinsic Q, and scattering coefficient. <em>Seismological Research Letters</em>, 81(5), 741-751.</li>
+<li><strong>支持理由：</strong> 该文章在计算台湾地区平均的尾波<span class="math math-inline">Q_0</span>和频率依赖指数<span class="math math-inline">n</span>（即<span class="math math-inline">η</span>）时，明确指出他们对不同台站的参数使用了对数平均，以获得区域的代表值。</li>
+<li><strong>文献原句摘录：</strong>“Considering the <strong>logarithmic average</strong> of the estimated values of the parameters <span class="math math-inline">Q_0</span> and <span class="math math-inline">n</span> of the 14 stations listed in Table 1, we obtain <span class="math math-inline">Q_0=134.41</span> and <span class="math math-inline">n=0.72</span>.” (参考该文的结论与对比部分)</li>
+</ul>
+<p><em><strong>参考文献 2：支持尾波特征计算中“对数平均等效于几何平均”及抑制极值的作用</strong></em></p>
+<ul>
+<li><strong>文献信息：</strong> Grendas, I., et al. (2022). Can site effects be estimated with respect to a distant reference station? Performance of the spectral factorization of coda waves. <em>Geophysical Journal International</em>, 230(1), 585-613.</li>
+<li><strong>支持理由：</strong> 该文章在处理尾波能量和场地放大系数时，详细阐述了为什么使用对数平均（几何平均），并在文中直接将二者画等号。这是因为衰减/放大效应是乘性效应（Multiplicative effect），乘性效应的统计特征服从对数正态分布，因此必须用几何/对数平均。</li>
+<li><strong>文献原句摘录：</strong>“The <strong>geometric mean</strong> value of the noise energy… is considered as the average noise energy level…”
+并在图表说明中明确标注：<em>“…from the corresponding <strong>logarithmic average (geometric mean)</strong>.”</em></li>
+</ul>
+</blockquote>
+</li>
+<li>
+<p>对于<span style="color:red;font-weight:bold"><span class="math math-inline">Q_c</span>值的频率依赖公式</span>，目前拟合算法中的均值也同样采用的是对数均值；<em><strong>（参考文献同上）</strong></em></p>
+</li>
+<li>
+<p>对于<span style="color:red;font-weight:bold"><span class="math math-inline">Q_c</span>值的空间分布图像</span>，目前在ArcGIS中的自建工具中使用的是<span class="math math-inline">Q_c^{-1}</span>的普通克里金插值并计算倒数后的<span class="math math-inline">Q_c</span>分布图；</p>
+</li>
+<li>
+<p>对于<span style="color:red;font-weight:bold"><span class="math math-inline">Q_c</span>值的时间变化曲线图</span>，目前<span class="math math-inline">Q_c</span>的算数平均数和对数平均数都有绘制，后续再考虑使用哪一种。</p>
+</li>
+</ol>
+</li>
+<li>
+<p>*（2026年3月25日）*从今日起，开始进行论文的绘图工作（<code>\Qiulin,Qin\研究区工程\制图工程</code>）。目前小论文中的所有图还没有进度，关于使用ArcGIS、Python还是GMT有待考虑：</p>
+<ol>
+<li><strong>波形处理与参数拟合示例图</strong>：通过Gemini 3.1 pro撰写绘图代码实现计划书，使用VS Code的 Claude haiku 4.5依据计划书撰写实现代码。目前实现的效果我很满意，后续可在此基础上修改（使用Adobe Illustrator进行微调或排版）；</li>
+<li><strong>频率依赖性拟合图</strong>：目前使用Python进行绘制（实现代码有两版，可供后续选择或修改）；</li>
+<li><strong>研究区概况以及台站分布图</strong>：目前考虑使用ArcGIS出图，但是还未获取完相关绘图数据（已获取高程DEM栅格数据、全国省市县、站点位置、全国断层矢量数据）；</li>
+<li><strong>时间序列图</strong>：目前通过Excel对年际对数均值进行了简单的统计和初步绘制，不是特别美观，后续考虑通过Python再次绘制，风格尽量与前面的波形图和拟合图保持一致。</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">19记</span> *（2026年3月30日 ~ 2026年4月5日）*无</p>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">20记</span> *（2026年4月6日 ~ 2026年4月12日）*本周为研二秋季学期的第五周，说句实话，这学期过去这么四周，这份日志我断断续续的已经不知道如何写下去了。</p>
+<ul>
+<li>*（2026年4月8日）*今日在Google Gemini的协助下，对研究区内的地质年代资料进行了初步的分析。实在是不知道这份小论文还得多少时间才能基本完成，虽然我早想着做完了。😊</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">21记</span> *（2026年4月13日 ~ 2026年5月10日）*这一个月的为本学期的第6、7、8、9周，啥也没干，正在尝试将初稿的“结果”和“讨论”部分分开论述。到此，这份日志我是真有些写不下去。</p>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">22记</span> *（2026年5月11日 ~ 2026年5月17日）*本周为第10周，可以说是期中了。为了追赶学习进度，不得已将本周末设为Deadline，希望我能按时完成。</p>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">23记</span> *（2026年5月18日 ~ 2026年5月24日）*本周为第11周，上周的论文撰写任务基本完成😴，目前新增修改并尝试投稿的Deadline——下周结束之前（本月底）。</p>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">24记</span> *（2026年5月25日 ~ 2026年5月31日）*本周为第12周，虽然这几天写论文的效率比较高，但是我觉得越来越不喜欢干这个事情了。</p>
+<ul>
+<li>*（2026年5月27日）*目前小论文基本成型，还需要改进的点：
+<ol>
+<li>正文部分所参考的文献过于久远（例如，关于河西走廊的地质地形地震活动的介绍），建议更新为近几年的论文；</li>
+<li>目前预计投稿中文期刊，先将图中标注改为中文；</li>
+<li>关于研究区概况图中的断层不能标注为“活断层”，统一图中标注的地震震级；</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">25记</span> *（2026年6月1日 ~ 2026年6月30日）*原谅我自己中间跳过了好几周的记录，不过期间我也是在老师的同意下投稿到中文期刊了，希望能一次录用吧，我不想在学习了，我心好累。</p>
+<ul>
+<li>*（2026年6月30日）*我真TM傻逼，把Windows系统下我的中间处理数据和结果绘图脚本以及图件给删除并清空了。
+<ol>
+<li>当天下午想通过DiskGenius程序恢复文件，最终我还是天真了，败在了固态硬盘的TRIM数据清理指令协议。当我点击清空回收站时，我才意识到大事不妙，立即停止清理，但我最重要的<code>Qiulin,Qin</code>文件夹还是被干掉了，文件的编码块全部变成了<code>00 00 00 00</code>。</li>
+<li>比较幸运的是，之前所有的脚本都是通过VS Code编写并修改的，这个程序自动保留了备份，只不过需要我手动召回并辨认脚本的功能（文件名并非我设置的，而是程序自动编码的名称）。如果没有这个功能，我之前的工作全部化为灰烬，我不知道该怎么办了。</li>
+<li>除了脚本的手动恢复，后续这几个月我还得重新制作中间的数据，包括但不仅限于<span class="math math-inline">Q_c</span>的ArcGIS插值数据、统计数据以及地震事件和台站数据。</li>
+<li>经历这件事情之后，我已经开始害怕将未来的工作数据仅保留一份在某一个存储空间上了。</li>
+<li>再次说明一下主动源台站的数据问题（台站zdy13、zdy26、zdy36），**<code>zdy13</code><strong>台站编号<code>BA70</code>在2021到2024年并没有任何数据，</strong><code>zdy26</code><strong>台站的miniseed数据转换出来的SAC格式名不是默认的<code>XX.ZDY26.*</code>而是<code>XX.BA49.*</code>，</strong><code>zdy36</code>**台站的miniseed数据转换出来的SAC格式名不是默认的<code>XX.ZDY36.*</code>而是<code>XX.ZDY.*</code>。</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">26记</span> *（2026年7月1日 ~ 2026年7月5日）*经过几天中午不睡午觉的努力，画图的绝大部分代码都通过VS Code的History文件夹搜索并找回了，但是中间用于插值<span class="math math-inline">Q_c</span>的数据文件全部都无法恢复了。只能说我得给VS Code磕一个，但不幸的是不能找回插值<span class="math math-inline">Q_c</span>的数据就能很难完全再次做出和之前一样的<span class="math math-inline">Q_c</span>空间分布图了，并且剖面的插值也不能重现，我不知但我什么时候还能做出大差不差的结果了。</p>
+</li>
+<li>
+<p><span style="color:blue;font-weight:bold">27记</span> *（2026年7月6日 ~ 2026年7月12日）*这周可能是本学期的倒数第二周吧，教务说是要在16日左右对学生宿舍进行整修，所以就赶着我们回家。</p>
+<ul>
+<li>很庆幸，目前为止那些被我大意删除的绘图脚本和中间数据基本得到了恢复和重制，除了上周多次尝试重现的<span class="math math-inline">Q_c</span>空间分布数据😥。在这期间，VS Code的自动备份文件机制和Google AI Studio的历时会话保存功能。</li>
+<li>截至到撰写，我已经尝试了多种距离分析和空间连接（5km-20km、1km-2km）的克里金插值（参数目前保持默认）结果重现组合，但结果均不理想。我已经完全忘记了几个月前我所设置的参数了，并且当时没有对此有所文字记录，所以我只能一点点的对往日的结果摸索着重现。至于能否做出相同的结果，我不敢保证，但我希望我能尽快。</li>
+<li>《地震地质》的两位外审专家，其中一位已经完成了他的审稿，一旦另一位也审稿结束，由于我还不能完成复刻<span class="math math-inline">Q_c</span>的空间分布图及其剖面图，要是让我大修包括数据在内的工作，不知道我该如何面对接下来的处理。</li>
+<li></li>
+</ul>
+</li>
+</ul>
+<h2>* 一些疑问</h2>
+<ol>
+<li>
+<blockquote>
+<p>✨🗝据经验及地震的实际观测，为消除衰减的S波对尾波记录的影响，通常将尾波窗口起始时间取为2倍的S波走时的时间。</p>
+</blockquote>
+<p>这里建议 <strong><code>将尾波窗口起始时间取为2倍的S波走时的时间</code></strong> ，为什么姜秀璇和梁钊城是以<strong>发震时间和P波到时</strong>为基础，计算理论2倍S波到时<span class="math math-inline">2\sqrt{3}(T_p-T_o)</span>，而不是手动拾取S波（或者使用深度学习的方法？）再取2倍S波走时的时间？这一近似的S波到时是否会对尾波衰减<span class="math math-inline">Q_c</span>的计算产生某些影响？</p>
+<p><strong>答复：</strong> 原文并没有在这一处理上进行详细解释说明。是因为人工拾取P波较拾取S波准确且容易得多吗？<strong>是的</strong></p>
+</li>
+<li>
+<blockquote>
+<p>✨🗝在姜秀璇的数据文件中，在台站信息表zdyinfonew、station中的B63D、B741都代表zdy07？</p>
+</blockquote>
+<p><strong>答复：</strong> *（2025年10月20日）*经验证（邹锐的论文<code>基于气枪主动源的祁连山地区地下介质衰减变化</code>中的台站位置图示）：B63D是zdy07，B741是zdy04。</p>
+<p><strong>如果后续需要使用姜秀璇已处理的数据，对这一部分的数据需要额外注意。</strong></p>
+<p>*（2025年12月29日）*依据往日的台站信息表格（<a href="D:%5CDesktop%5CmatterMaster%5CQiulin,Qin%5C4-%E6%95%B0%E6%8D%AE%E7%9B%B8%E5%85%B3%5C%E4%B8%BB%E5%8A%A8%E6%BA%90%E5%8F%B0%E7%AB%99%E4%BF%A1%E6%81%AF.xls">主动源台站信息.xls</a>），B63D是zdy04，B741是zdy07，但经过我之前使用<code>arcfetch</code>和<code>mseed2sac</code>程序提取得到的SAC文件文件名来看，与往日的表格正好相反，其余编号都与之一致。</p>
+<p>*(2026年1月4日）*发现我拿到的主动源台站编号混乱，多个台站的数据格式转换出来得到的数据头段变量有一定的偏差，在后续处理中可能还需要进行额外的文件名识别。</p>
+</li>
+<li>
+<blockquote>
+<p>✨🗝姜秀璇和梁钊城对主动源数据的波形截取方式不一样，姜在提取特定地震事件波形时就已经裁剪了固定时间长度的波形，而梁则是在后续写入事件信息时使用<code>cut</code>命令来进行裁剪波形。</p>
+</blockquote>
+<ul>
+<li>姜秀璇提前对地震发震时间减去10秒（见<em><strong>疑问6</strong></em>），使用<code>arcfetch</code>程序来提取出相对发震时间**-10~190s**的波形；</li>
+<li>还未找到梁钊城数据文件夹中关于主动源数据提取的脚本或方式描述。</li>
+</ul>
+<p><strong>答复：</strong> <em>（2025年11月19日）<em>对于波形的裁剪，我采用姜秀璇的处理方式。此种方式得到SAC文件名会比实际发震时间早10s，故在写入发震参考时间</em></em><code>o</code>**时可以根据文件名的时间加上10s即可，无需再遍历地震目录的时间。</p>
+<p>*（2025年11月19日下午）*又尝试通过<code>arcfetch</code>利用发震时间直接截取300s，根据上午的测试，不提前10s一般也能完整的得到整个波形记录。</p>
+</li>
+<li>
+<blockquote>
+<p>✨🗝如何对提取的波形数据进行处理？</p>
+</blockquote>
+<p><strong>答复：</strong> 目前已根据地震目录，将主动源的数据截取了从发震时刻<span class="math math-inline">o</span>截取地震发生前10s，及之后200s的地震波形：</p>
+<ul>
+<li>编辑SAC头字段写入发震时刻<span class="math math-inline">o</span>和标记P波到时<span class="math math-inline">T_1</span>？</li>
+<li>去均值、去线性趋势和波形尖灭？<code>rmean;rtrend;taper</code></li>
+</ul>
+</li>
+<li>
+<blockquote>
+<p>已知，地震尾波衰减研究是可以不需要进行去仪器响应的， 而波形筛选的要求是？</p>
+</blockquote>
+<p>没有定量的条件吗，仅凭眼看波形质量？也许是。</p>
+<p>对于不合适的波形，请参照<a href="D:%5CDesktop%5CSAC_Docs.pdf">SAC_Docs</a>手册的<strong>5.17 质量控制</strong>一节，比如在任意时间点标记<code>t9</code>并将该类标记的数据移动到专用文件夹<code>saclst t9 f *.SAC | awk '$2&gt;0 {print "mv", $1, "BAD/"}' | sh</code>。</p>
+</li>
+<li>
+<blockquote>
+<p>✨🗝在姜秀璇的数据文件夹中，地震目录的时间和使用实际截取的波形数据时间不一致。</p>
+</blockquote>
+<p>以<code>\ZDY1_3\40\</code>这一数据文件夹为例，30km内的地震目录文件<code>30.EQT</code>中显示<strong>2016年7月15时16分36秒60毫秒</strong>有一次地震事件，但在用于读取的发震时间文件<code>w302</code>（年积日）中却是<strong>2016年197日8时36分50秒000毫秒</strong>，这一时间处理（同一地震事件时分秒的不同）是如何进行的？</p>
+<p><strong>答复：</strong> *（2025年11月18日）*文件夹中的<code>bjtime2worldtime.sh</code>脚本对北京时间和世界时进行了转换！<strong>将北京时间减去28800秒</strong>即可得到世界时！但在实际处理时，姜秀璇额外减去了10秒，是为了在截取地震波形数据时得到地震发生前10s的波形数据。我将该UTC时间转换功能整合到了<code>convert_events_DoY.sh</code>脚本中，启用<code>--utc</code>便可实现世界时的同步转换！</p>
+</li>
+<li>
+<blockquote>
+<p>姜秀璇在选择尾波窗长LTW（流逝时间窗Lapse Time Window）时，为什么选择20、30、40s作为研究对象？</p>
+</blockquote>
+<p>*Kopnichev和Gao等人在实验中证明，尾波窗小于100 秒内观察到的尾波中主要成分是单次散射，而大于100秒时观察到的尾波中主要成分是多次散射。据实验分析，尾波窗长最小应为20秒，在实际应用中，大多选择20 - 40s。*这里涉及一本外文书籍《Seismic wave propagation and scattering in the heterogeneous earth : Second edition》，需要了解一下姜在文中描述的<code>据实验分析，尾波窗长最小应为20秒，在实际应用中，大多选择20 - 40s</code>是怎么得到的？</p>
+<p>另外，朱新运的博士论文《衰减、场地响应等地震波传播相关信息综合研究》中也提到<code>以信噪比高于根号2截断尾波作为最大可用尾波段，对于记录质量较高的地震波以此标准截断的尾波窗可能很长尾波窗太长不可避免的引入了多次散射作用对此尾波窗长不宜太长 </code>，但文中并未过多提到尾波窗长的参数选择方法。<strong>尾波流逝时间是影响地震波尾波衰减参数最大的因素</strong>，反映到实际计算中表现为值随尾波流逝时间增大而增大。朱新运在其研究中，将流逝时间严格限定为<strong>60s</strong>。</p>
+</li>
+<li>
+<blockquote>
+<p>✨🗝对于一些截取出来的200s波形数据，<strong>在同一条波形中有两个甚至以上个数的地震记录</strong>，比如在<code>zdy35</code>的2022年第7和第8日就有大量的多地震波记录，这一情况下应该如何处理？</p>
+</blockquote>
+<p><strong>答复：</strong> *（2025年12月24日下午）*目前对于该类型的数据（主要是<code>zdy35</code>及其之后的台站数据）处理办法是，如果两个地震时间相距不是特别近则优先拾取第一个地震P波而第二个地震P波则无法拾取；如果时间相距比较远，则优先拾取第二个地震P波，且第一个地震P波也可以进行拾取。</p>
+</li>
+<li>
+<blockquote>
+<p>✨🗝对于我重构的用于计算<span class="math math-inline">Q_c</span>的python脚本，目前有两个需要注意的地方。</p>
+</blockquote>
+<ul>
+<li>在计算<span class="math math-inline">SNR</span>时，往日直接采用P波到时的两倍，而在当前则是2倍S波到时（2倍根号3）</li>
+<li>在计算<span class="math math-inline">Q_c</span>时，往日代码采用<code>i-1</code>进行索引，而当前则直接使用全部索引（不减1）</li>
+</ul>
+<p>该疑问描述请见<em><strong>10记</strong></em>部分的内容。</p>
+<p><strong>答复：</strong> *（2026年1月6日下午）*在计算<span class="math math-inline">SNR</span>信噪比最后5秒的python代码处应当采用<code>当前则是2倍S波到时（2倍根号3）</code>这一原则，师兄师姐他们在此处有一个错误，需要注意！正确地采用**2倍根号3的P波走时(即2倍S波走时)**来计算信噪比，会比错误地采用~2倍P波走时~得到的符合筛选条件的记录少。<span style="color:Green;font-weight:bold">这是因为错误地采用~2倍P波走时~时，用于计算信噪比的波记录大概率并不在尾波时间窗之内，导致这样得到的<span class="math math-inline">SNR</span>偏大，即同等筛选条件下（<span class="math math-inline">SNR\ge 3</span>）的记录会偏多。</span></p>
+<p>关于此处的计算索引，目前测试结果来看，并不会有任何错误或影响，保持当前索引方式。</p>
+</li>
+<li>
+<blockquote>
+<p>✨🗝为什么要使用 <span class="math math-inline">Q_c{−1}</span> 而不是 <span class="math math-inline">Q_c</span>进行插值？</p>
+</blockquote>
+<p><strong>物理机制的依据：能量衰减的线性可加性。<strong>在地震学中，品质因子<span class="math math-inline">Q</span>是一个无量纲参数，它本身并不直接代表能量损失的绝对量。真正代表介质</strong>“内摩擦”<strong>或</strong>“衰减系数”</strong>（即地震波每传播一个波长所损失的能量比例）的是它的倒数<span class="math math-inline">Q^{−1}</span>。从<strong>衰减理论公式</strong><span class="math math-inline">Q_{total}^{−1}=Q_{intrinsic}^{−1}+Q_{scattering}^{−1}</span>可以看出，<strong>物理上的衰减效应是严格按照 <span class="math math-inline">Q^{−1}</span>来进行线性叠加的</strong>。空间插值（无论哪种算法）的数学前提是变量在空间上具有<strong>线性连续性</strong>。对<span class="math math-inline">Q</span>插值在物理上是错误的，必须对<span class="math math-inline">Q^{−1}</span>插值才符合波的能量耗散积分原理。</p>
+<p><strong>数学分布的依据：压制非正态分布畸变。</strong><span class="math math-inline">Q_c</span>值在自然界中往往跨度极大（从几十到几千），其空间分布通常呈严重的偏态（Log-normal distribution）。如果直接对 <span class="math math-inline">Q_c</span>插值，高达2000的极值点会像“黑洞”一样拉高周围的所有预测值，掩盖真实的衰减异常。而转换成<span class="math math-inline">Q^{−1}</span>后，数值分布更加平稳、趋于正态分布，完美契合地质统计学的要求。</p>
+<p><strong>Sato, H., Fehler, M. C., &amp; Maeda, T. (2012).</strong> <em>Seismic wave propagation and scattering in the heterogeneous earth.</em> Springer. （国际公认的地震波散射圣经，明确指出衰减属性的物理表达为<span class="math math-inline">Q^{−1}</span>）</p>
+<p><strong>赵连锋, 谢小碧, 何熹, 等. (2022).</strong> 地震 Lg 波衰减成像方法, 算法, 数据处理流程及应用. <em>地球与行星物理论评</em>, 53(6), 24.（国内顶级的衰减层析成像综述，强调衰减系数<span class="math math-inline">Q^{−1}</span>是空间积分与反演的基础）</p>
+</li>
+<li>
+<blockquote>
+<p>✨🗝为什么要对<span class="math math-inline">Q_c^{−1}</span>进行渔网均值化，而不是直接平均<span class="math math-inline">Q_c</span>？</p>
+</blockquote>
+<p>避免“高值掩盖低值”的严重数学偏倚（Nugget Effect Bias）。地质学上，我们最关心的是<strong>断裂带、流体、破碎带</strong>，这些区域表现为<strong>高衰减（极低的</strong><span class="math math-inline">Q_c</span>值，例如<span class="math math-inline">Q_c=100</span>）<strong>。而稳定的岩石表现为</strong>低衰减（极高的<span class="math math-inline">Q_c</span>值，例如<span class="math math-inline">Q_c=1000</span>）。</p>
+<ul>
+<li>如果一个网格内有两条射线，一条测出<span class="math math-inline">Q_c=100</span>，一条测出<span class="math math-inline">Q_c=1000</span>。
+<ul>
+<li><strong>错误做法（算术平均</strong><span class="math math-inline">Q_c</span>）**：<span class="math math-inline">(100+1000)/2=550</span>。结果：这个网格看起来是个中等偏稳定的区域。**断层的低<span class="math math-inline">Q_c</span>异常被彻底抹杀了！</li>
+<li><strong>正确做法（平均<span class="math math-inline">Q_c^{−1}</span>，即物理上的调和平均）</strong>：<span class="math math-inline">(1/100+1/1000)/2=0.0055</span>。将其倒数还原，真实的平均<span class="math math-inline">Q_c≈181</span>。结果：该网格成功保留了高衰减（低<span class="math math-inline">Q_c</span>）的物理特征！</li>
+</ul>
+</li>
+<li>因此，对<span class="math math-inline">Q_c</span>直接求平均，会严重抹杀掉构造活跃区（低<span class="math math-inline">Q</span>异常）的特征，只有对<span class="math math-inline">Q_c^{−1}</span>求平均，才能真实保留介质的破碎信息。</li>
+</ul>
+<p><strong>Bao, X., Sandvol, E., Ni, J., et al. (2011).</strong> High resolution regional seismic attenuation tomography in eastern Tibetan Plateau and adjacent regions. <em>Geophysical Research Letters</em>, 38(16).（青藏高原东缘衰减成像的经典文献，其反演和网格平滑都是基于<span class="math math-inline">Q^{-1}</span>或衰减系数展开的）。</p>
+<p><strong>Pei, S., Liu, J., Ma, H., et al. (2010).</strong> Dynamic Variation of S-Wave Q Value Beneath Sichuan Yunnan, China. <em>Chinese Journal of Geophysics</em>, 53(7), 1639-1652.（在处理多射线交叉网格时，采用衰减率<span class="math math-inline">Q^{-1}</span>进行平滑分配）。</p>
+</li>
+</ol>
+<h2>** 如何拟合频率依赖关系</h2>
+<p>在梁钊城和姜秀璇的论文中，这对应于“计算得到的尾波 <span class="math math-inline">Q_c</span> 随频率变化关系”部分（通常形如 <span class="math math-inline">Q_c = Q_0 f^\eta</span>）。实现这一步的核心思想是将<strong>非线性的幂函数关系</strong>转化为<strong>线性的对数关系</strong>，然后利用最小二乘法进行回归。</p>
+<h3>i. 对数线性化</h3>
+<p>假设尾波 <span class="math math-inline">Q_c</span> 与频率 <span class="math math-inline">f</span> 满足幂函数关系：$ Q_c(f) = Q_0 \cdot f^\eta $</p>
+<ul>
+<li><strong><span class="math math-inline">Q_0</span></strong>：表示频率为 <strong>1Hz</strong> 时的 <span class="math math-inline">Q_c</span> 值，反映了该区域整体的衰减水平（构造越活跃，<span class="math math-inline">Q_0</span> 通常越低）</li>
+<li><span class="math math-inline">\eta</span> (eta)：频率依赖指数，反映了地下介质非均匀性的程度（构造越活跃，<span class="math math-inline">\eta</span> 通常越高）</li>
+</ul>
+<p>为了求解 <span class="math math-inline">Q_0</span> 和 <span class="math math-inline">\eta</span>，在公式两边取自然对数（或常用对数）：
+<span class="math math-display"> \ln(Q_c) = \ln(Q_0 \cdot f^\eta) </span>
+<span class="math math-display"> \ln(Q_c) = \ln(Q_0) + \eta \cdot \ln(f) </span></p>
+<p>这实际上就是一个一元一次线性方程 <span class="math math-inline">Y = ax + b</span>：</p>
+<ul>
+<li><span class="math math-inline">Y = \ln(Q_c)</span></li>
+<li><span class="math math-inline">X = \ln(f)</span></li>
+<li>斜率 <span class="math math-inline">a = \eta</span></li>
+<li>截距 <span class="math math-inline">b = \ln(Q_0)</span></li>
+</ul>
+<p><strong>实施目标：</strong> 通过线性回归求出斜率和截距，进而得到 <span class="math math-inline">\eta</span> 和 <span class="math math-inline">Q_0</span>（<span class="math math-inline">Q_0 = e^b</span>）。</p>
+<h3>ii. 详细步骤</h3>
+<blockquote>
+<p>前提：已计算得到某台站（或某区域）在所有地震事件下、各个频率（1.5, 3, …, 24 Hz）的 <span class="math math-inline">Q_c</span> 值。</p>
+</blockquote>
+<p><em><strong>步骤 1：数据清洗与平均 (Data Aggregation)</strong></em></p>
+<p>由于单个地震计算出的 <span class="math math-inline">Q_c</span> 值可能存在波动，<strong>不能直接对成百上千个散点进行拟合</strong>（ <span class="math math-inline">R^2</span> 会很低且权重不好控制），而应该先计算每个频率点下的<strong>平均值</strong>和<strong>标准差</strong>。</p>
+<ol>
+<li>将所有数据按中心频率分组（1.5Hz 组, 3Hz 组…）；</li>
+<li>剔除每个组内的极端异常值（例如超过 3 倍标准差的数据）；</li>
+<li>计算每个频率点下 <span class="math math-inline">Q_c</span> 的<strong>均值 (Mean)</strong> 和 <strong>标准差 (Std)</strong>。</li>
+</ol>
+<p><em><strong>步骤 2：对数变换 (Log Transformation)</strong></em></p>
+<p>准备两个数组：</p>
+<ul>
+<li><span class="math math-inline">X_{log} = [\ln(1.5), \ln(3), \ln(6), \dots, \ln(24)]</span></li>
+<li><span class="math math-inline">Y_{log} = [\ln(Q_{c\_mean}^{1.5}), \ln(Q_{c\_mean}^{3}), \dots, \ln(Q_{c\_mean}^{24})]</span></li>
+</ul>
+<p><em><strong>步骤 3：加权线性回归 (Weighted Linear Regression)</strong></em></p>
+<p>虽然普通最小二乘法（OLS）也可以，但考虑到不同频率下的数据质量不同（例如低频部分信噪比可能低，样本离散度大），进阶的做法是使用<strong>加权最小二乘法</strong>，权重为标准差的倒数。</p>
+<p>拟合 <span class="math math-inline">X_{log}</span> 和 <span class="math math-inline">Y_{log}</span>，得到：</p>
+<ul>
+<li>斜率 <span class="math math-inline">a</span> <span class="math math-inline">\rightarrow</span> 即为 <strong><span class="math math-inline">\eta</span></strong></li>
+<li>截距 <span class="math math-inline">b</span> <span class="math math-inline">\rightarrow</span> 计算 <span class="math math-inline">Q_0 = e^b</span></li>
+</ul>
+<p><em><strong>步骤 4：误差估计与绘图</strong></em></p>
+<ul>
+<li>计算拟合优度 <span class="math math-inline">R^2</span></li>
+<li>绘制双对数坐标图：横轴为频率 <span class="math math-inline">f</span>，纵轴为 <span class="math math-inline">Q_c</span></li>
+<li>画出平均值点、误差棒（标准差）以及拟合的直线</li>
+</ul>
+<h3>iii. 代码实现</h3>
+<pre><code class="language-python">import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score
+
+# ==========================================
+# 1. 数据录入（每个频率下的观测值，二维列表/数组）
+# ==========================================
+# 每个子列表为一个频率下的所有观测值
+freqs = np.array([1.5, 3, 6, 9, 12, 18, 24])
+# 从文本文件读取观测值
+def read_txt_data(filename):
+    with open(filename, 'r', encoding='utf-8') as f:
+        return [float(line.strip()) for line in f if line.strip()]
+
+# 读取各个频率的观测值
+time_window = 40  # seconds
+qc_data = [
+    read_txt_data(f'./{time_window}s/{time_window}s1p5Hz.txt'),  # 1.5Hz
+    read_txt_data(f'./{time_window}s/{time_window}s3Hz.txt'),    # 3Hz
+    read_txt_data(f'./{time_window}s/{time_window}s6Hz.txt'),    # 6Hz
+    read_txt_data(f'./{time_window}s/{time_window}s9Hz.txt'),    # 9Hz
+    read_txt_data(f'./{time_window}s/{time_window}s12Hz.txt'),   # 12Hz
+    read_txt_data(f'./{time_window}s/{time_window}s18Hz.txt'),   # 18Hz
+    read_txt_data(f'./{time_window}s/{time_window}s24Hz.txt')    # 24Hz
+]
+# 自动计算均值和标准差
+# Q_c^{-1}：均值采用调和平均数 (Harmonic Mean)：先求倒数的平均，再倒数回来
+# 标准差使用误差传递公式（Delta Method）: sigma_Q_c = sigma_inv * (Q_c)^2
+
+# 先计算1/Q_c的统计量
+qc_inv_data = [1.0 / np.array(arr) for arr in qc_data] # 获取某频率下所有的 Qc^-1
+mu_inv = np.array([np.mean(arr) for arr in qc_inv_data]) # Step 1: 算术平均值 mu_inv
+sigma_inv = np.array([np.std(arr, ddof=1) for arr in qc_inv_data]) # Step 1: 标准差 sigma_inv
+
+# 通过调和平均计算Q_c的均值
+qc_means = 1.0 / mu_inv # Step 2: 真实的区域平均 Qc = 1 / mu_inv
+
+# 使用误差传递公式计算Q_c的标准差
+qc_stds = sigma_inv * (qc_means ** 2) # Step 3: 根据公式 sigma_Qc = sigma_inv * (Qc)^2
+
+print("观测数据点数:", [len(arr) for arr in qc_data])
+print("观测数据均值:", qc_means)
+print("观测数据标准差:", qc_stds)
+
+# ==========================================
+# 2. 数据预处理与权重计算
+# ==========================================
+# 转换到对数域
+x_log = np.log(freqs)
+y_log = np.log(qc_means)
+
+# 计算对数域的标准差 (误差传播: d(lnx) = dx/x)
+# sigma_log_y = sigma_y / y
+log_stds = qc_stds / qc_means
+
+# 计算权重 (Weights = 1 / sigma)
+# 这一步保证了相对误差小的数据点（更可靠的点）在拟合中占比更重
+weights = 1.0 / log_stds
+
+# ==========================================
+# 3. 加权线性拟合
+# ==========================================
+# 使用 numpy.polyfit 进行拟合
+# deg=1 表示拟合直线 y = kx + b
+# cov=True 返回协方差矩阵，用于计算拟合参数的误差
+coeffs, cov_matrix = np.polyfit(x_log, y_log, deg=1, w=weights, cov=True)
+
+eta_fit = coeffs[0]          # 斜率即为 eta
+ln_q0 = coeffs[1]            # 截距为 ln(Q0)
+Q0_fit = np.exp(ln_q0)       # 反解 Q0
+
+# 计算误差 (Standard Errors)
+perr = np.sqrt(np.diag(cov_matrix)) # 对角线开根号得到参数标准误
+eta_error = perr[0]
+ln_q0_error = perr[1]
+# Q0 的误差传播: delta_Q0 = Q0 * delta_ln_Q0
+Q0_error = Q0_fit * ln_q0_error 
+
+# 计算拟合优度 R^2
+y_pred_log = eta_fit * x_log + ln_q0
+r2 = r2_score(y_log, y_pred_log, sample_weight=weights)
+
+# ==========================================
+# 4. 输出结果
+# ==========================================
+print("="*40)
+print("拟合结果 Report")
+print("="*40)
+print(f"Q0  = {Q0_fit:.2f} ± {Q0_error:.2f}")
+print(f"eta = {eta_fit:.4f} ± {eta_error:.4f}")
+print(f"R^2 = {r2:.4f}")
+print("-" * 40)
+print(f"拟合公式: Qc(f) = ({Q0_fit:.1f}±{Q0_error:.1f}) * f^({eta_fit:.2f}±{eta_error:.2f})")
+print("="*40)
+
+# ==========================================
+# 5. 专业绘图 (对数坐标系)
+# ==========================================
+# 设置字体：英文使用Times New Roman，中文使用宋体
+plt.rcParams['font.serif'] = ['Times New Roman', 'SimSun']
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+# 设置数学公式字体为Times New Roman风格
+plt.rcParams['mathtext.fontset'] = 'stix'  # STIX字体与Times New Roman相似
+plt.rcParams['mathtext.rm'] = 'Times New Roman'
+plt.rcParams['mathtext.it'] = 'Times New Roman:italic'
+plt.rcParams['mathtext.bf'] = 'Times New Roman:bold'
+
+plt.figure(figsize=(7, 5), dpi=210)
+
+# 绘制所有原始观测点（散点）
+for i, f in enumerate(freqs):
+    plt.scatter([f]*len(qc_data[i]), qc_data[i], color='#5DADE2', alpha=0.5, s=30)
+
+# 绘制拟合曲线
+f_smooth = np.linspace(1, 30, 100)
+qc_fit_curve = Q0_fit * (f_smooth ** eta_fit)
+plt.plot(f_smooth, qc_fit_curve, linestyle='--', linewidth=4, color='#FF5252',
+         dash_capstyle='round',
+         label=f'Fit: &lt;span class="math math-inline" data-math-placeholder="33"&gt;&lt;/span&gt; (&lt;span class="math math-inline" data-math-placeholder="34"&gt;&lt;/span&gt;)')
+
+# 绘制均值和误差棒
+plt.errorbar(freqs, qc_means, yerr=qc_stds, fmt='o', color='#34495E', 
+             ecolor="#70DE73", elinewidth=1.5, capsize=4, 
+             label='Mean ± Std')
+
+# 设置坐标轴为对数刻度
+plt.xscale('log')
+plt.yscale('log')
+
+# 设置刻度显示格式
+from matplotlib.ticker import ScalarFormatter
+plt.gca().xaxis.set_major_formatter(ScalarFormatter())
+plt.xticks([1.5, 3, 6, 9, 12, 18, 24], ['1.5', '3', '6', '9', '12', '18', '24'])
+# 手动设置Y轴刻度位置，显示更多标注
+plt.yticks([10, 100, 1000, 10000])
+
+# 标签与美化
+plt.xlabel('Frequency (Hz)', fontsize=11)
+plt.ylabel('&lt;span class="math math-inline" data-math-placeholder="35"&gt;&lt;/span&gt;', fontsize=11)
+plt.title(f'Frequency Dependence of Coda &lt;span class="math math-inline" data-math-placeholder="36"&gt;&lt;/span&gt;\n with {time_window}s Time Window', fontsize=13)
+plt.grid(True, which="both", ls="-.", alpha=0.3)
+plt.legend(fontsize=10)
+
+plt.show()
+</code></pre>
+<h2>*** 如何使用克里金法进行空间插值</h2>
+<p>核心逻辑是：<strong>离散点 -&gt; 空间聚合(降噪/平滑) -&gt; 稀疏点 -&gt; 全局插值</strong>。</p>
+<h3>i. 准备离散点</h3>
+<blockquote>
+<p>已通过使用<code>数据管理工具 &gt; 要素 &gt; XY转线</code>生成了地震射线路径</p>
+</blockquote>
+<p><strong>1. 打开工具箱</strong>：</p>
+<p><code>Data Management Tools (数据管理工具)</code> &gt; <code>Sampling (采样)</code> &gt; <code>Generate Points Along Lines (沿线生成点)</code>。</p>
+<p><strong>2. 设置参数</strong>：</p>
+<ul>
+<li><strong>Input Features (输入要素)</strong>：射线（线图层）。</li>
+<li><strong>Output Feature Class (输出要素类)</strong>：设置输出的点文件路径。</li>
+<li><strong>Point Placement (点位置)</strong>：选择 <strong>DISTANCE</strong> (按距离)。</li>
+<li><strong>Distance (距离)</strong>：这是最关键的参数。输入采样间隔，例如 5 Kilometers (5千米) 或 0.05 Decimal Degrees (取决于你的坐标系)。间隔越小，点越密，插值越精细，但计算量越大。</li>
+<li><strong>Include End Points (包含端点)</strong>：<strong>勾选</strong>。这能保证台站位置和震源位置都被采样到。</li>
+</ul>
+<p><strong>3. 检查坐标系</strong>：</p>
+<ul>
+<li>确保 <code>Ray_Points</code> 使用的是<strong>投影坐标系</strong>（如 UTM），而不是地理坐标系（经纬度）。</li>
+<li>原因：后续建立渔网需要以“米/千米”为单位，经纬度的度数在不同纬度代表的距离不同，会导致网格变形。</li>
+<li>工具：<code>Project</code> (投影)。</li>
+</ul>
+<h3>ii. 消除射线路径</h3>
+<p>这是消除“条带效应”的关键步骤。</p>
+<p><strong>1. 创建渔网 (Create Fishnet)</strong></p>
+<ul>
+<li><strong>工具箱</strong>：<code>Data Management Tools</code> &gt; <code>Sampling</code> &gt; <code>Create Fishnet</code></li>
+<li><strong>关键参数设置</strong>：
+<ul>
+<li><strong>Output Feature Class</strong>：命名为 <code>Grid_Mesh.shp</code>。</li>
+<li><strong>Template Extent (模板范围)</strong>：<code>Ray_Points</code> 图层（或研究区边界）。</li>
+<li><strong>Cell Size Width/Height (像元大小)</strong>：<strong>核心参数！</strong>
+<ul>
+<li>建议设置为 <code>20km</code> x <code>20km</code> 或 <code>0.2</code> 度。</li>
+<li>经验法则：网格大小应略大于射线间的平均间隙。如果太小，还是会有空洞；如果太大，分辨率会降低。</li>
+</ul>
+</li>
+<li><strong>Geometry Type</strong>：选择 <strong><code>POLYGON</code></strong>。</li>
+</ul>
+</li>
+<li>结果：得到覆盖研究区的整齐方格网。</li>
+</ul>
+<p><strong>2. 空间连接 (Spatial Join)</strong></p>
+<ul>
+<li><strong>工具箱</strong>：<code>Analysis Tools</code> &gt; <code>Overlay</code> &gt; <code>Spatial Join</code></li>
+<li><strong>关键参数设置</strong>：
+<ul>
+<li><strong>Target Features (目标要素)</strong>：<code>Grid_Mesh</code> (刚才生成的网格)。</li>
+<li><strong>Join Features (连接要素)</strong>：<code>Ray_Points</code> (密集的射线点)。</li>
+<li><strong>Output Feature Class</strong>：命名为 <code>Grid_With_Qc.shp</code>。</li>
+<li><strong>Join Operation</strong>：<code>JOIN_ONE_TO_ONE</code>。</li>
+<li><strong>Field Map of Join Features (字段映射) —— 最重要的一步！</strong>：
+<ol>
+<li>在列表中找到 <strong><code>Qc</code></strong> 字段。</li>
+<li><strong>右键点击</strong> <code>Qc</code>，选择 <strong>Merge Rule (合并规则)</strong>。</li>
+<li>选择 <strong><code>Mean</code> (平均值)</strong>。</li>
+</ol>
+<ul>
+<li><em>(这一步的作用是：如果一个网格里有100个点，计算这100个点的Qc平均值赋给这个网格)</em>。</li>
+</ul>
+</li>
+<li><strong>Match Option</strong>：<code>CONTAINS</code> (包含)。</li>
+</ul>
+</li>
+<li>结果：得到一个新的网格图层，属性表中有一个 <code>Qc</code> 字段（实际是平均值）。很多没射线的网格该字段为空（Null）。</li>
+</ul>
+<p><strong>3. 筛选有效网格 (Select &amp; Export)</strong></p>
+<ul>
+<li>由于研究区外有很多空网格，需要剔除。</li>
+<li>打开 <code>Grid_With_Qc</code> 属性表 -&gt; <strong>按属性选择</strong> -&gt; <code>Qc IS NOT NULL</code>。</li>
+<li>右键图层 -&gt; <code>Data</code> -&gt; <code>Export Features</code> -&gt; 保存为 <code>Valid_Blocks.shp</code>。</li>
+</ul>
+<p><strong>4. 面转点 (Feature To Point)</strong></p>
+<ul>
+<li>插值工具通常需要点作为输入。</li>
+<li><strong>工具箱</strong>：<code>Data Management Tools</code> &gt; <code>Features</code> &gt; <code>Feature To Point</code></li>
+<li><strong>Input Features</strong>：<code>Valid_Blocks.shp</code>。</li>
+<li><strong>Output Feature Class</strong>：<code>Block_Centers.shp</code>。</li>
+<li>结果：一组分布均匀、不仅保留了空间变化趋势，还消除了单条射线噪声的<strong>高质量采样点</strong>。</li>
+</ul>
+<h3>iii. 普通克里金插值法</h3>
+<p>现在使用处理过的 <code>Block_Centers</code> 进行插值。</p>
+<p><strong>1. 普通克里金插值 (Kriging)</strong></p>
+<ul>
+<li><strong>工具箱</strong>：<code>Spatial Analyst Tools</code> &gt; <code>Interpolation</code> &gt; <code>Kriging</code> (或者用地统计向导)。</li>
+<li><strong>Input Point Features</strong>：<code>Block_Centers</code>。</li>
+<li><strong>Z value field</strong>：<code>Qc</code>。</li>
+<li><strong>Semivariogram Model (半变异函数模型)</strong>：
+<ul>
+<li>选择 <code>Spherical</code> (球状) 或 <code>Gaussian</code> (高斯)。</li>
+<li>此时因为数据已经是平滑过的中心点，<strong>Nugget (块金值)</strong> 可以设得很小甚至为0。</li>
+</ul>
+</li>
+<li><strong>Search Radius (搜索半径)</strong>：
+<ul>
+<li>设置为 <code>Variable</code> (可变)，点数设为 <code>12</code> 左右即可（因为现在的点已经是代表区域的平均值了，不需要搜太远）。</li>
+</ul>
+</li>
+<li><strong>Output Cell Size</strong>：可以设置得比之前的网格小（例如 5km），以获得平滑的视觉效果。</li>
+<li><strong>Environments (环境设置)</strong>：
+<ul>
+<li><strong>Processing Extent</strong>：设置为研究区边界。</li>
+<li><strong>Mask</strong>：设置研究区掩膜。</li>
+</ul>
+</li>
+</ul>
+</div>
+  <div class="share-container" style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center;">
+    <a class="back-link" href="/">&larr; Back to posts</a>
+    <button id="share-btn" style="background: var(--accent); color: var(--bg); border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+      </svg>
+      Share
+    </button>
+  </div>
+</article></section>
+    </main>
+    <footer>Qiulin built this website using Rust.</footer>
+  </div>
+  <div id="search-modal" class="search-modal">
+    <div class="search-content">
+      <div class="search-input-wrapper">
+        <input type="text" id="search-input" class="search-input" placeholder="Search posts..." autocomplete="off">
+      </div>
+      <ul id="search-results" class="search-results"></ul>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://unpkg.com/swup@4"></script>
+  <script>
+document.addEventListener('DOMContentLoaded', () => {
+      const swup = new Swup({
+        animationSelector: '[class*="transition-"]'
+      });
+      window.swup = swup;
+      let cleanupFunctions = [];
+      
+      const themeToggleBtn = document.getElementById('theme-toggle-btn');
+      if (themeToggleBtn) {
+        const updateHljsTheme = (theme) => {
+          const hljsLight = document.getElementById('hljs-light');
+          const hljsDark  = document.getElementById('hljs-dark');
+          if (hljsLight && hljsDark) {
+            hljsLight.media = theme === 'dark' ? 'none' : 'all';
+            hljsDark.media  = theme === 'dark' ? 'all'  : 'none';
+          }
+        };
+
+        // hljs initial sync is handled by the blocking head script
+
+        themeToggleBtn.addEventListener('click', () => {
+          const currentTheme = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+          updateHljsTheme(newTheme);
+        });
+      }
+
+      const searchBtn = document.getElementById('site-search-btn');
+      const searchModal = document.getElementById('search-modal');
+      const searchInput = document.getElementById('search-input');
+      const searchResults = document.getElementById('search-results');
+      let searchIndex = null;
+
+      if (searchBtn && searchModal) {
+        const closeSearch = () => {
+          searchModal.classList.remove('active');
+          searchInput.blur();
+        };
+
+        const openSearch = async () => {
+          searchModal.classList.add('active');
+          searchInput.focus();
+          
+          if (!searchIndex) {
+            try {
+              const res = await fetch('/search_index.json');
+              searchIndex = await res.json();
+            } catch (e) {
+              console.error('Failed to load search index:', e);
+            }
+          }
+        };
+
+        searchBtn.addEventListener('click', openSearch);
+        
+        searchModal.addEventListener('click', (e) => {
+          if (e.target === searchModal) closeSearch();
+        });
+        
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && searchModal.classList.contains('active')) {
+            closeSearch();
+          }
+        });
+
+        searchInput.addEventListener('input', (e) => {
+          const query = e.target.value.trim().toLowerCase();
+          searchResults.innerHTML = '';
+          
+          if (!query || !searchIndex) return;
+          
+          const results = searchIndex.filter(post => 
+            post.title.toLowerCase().includes(query) ||
+            post.description.toLowerCase().includes(query) ||
+            post.body.toLowerCase().includes(query)
+          ).slice(0, 10);
+          
+          if (results.length === 0) {
+            searchResults.innerHTML = '<li style="padding: 16px 20px; color: var(--muted);">No results found.</li>';
+            return;
+          }
+          
+          results.forEach(post => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.className = 'search-result-item';
+            a.href = `/posts/${post.slug}/`;
+            
+            const title = document.createElement('div');
+            title.className = 'search-result-title';
+            title.textContent = post.title;
+            
+            let excerptText = post.description;
+            const bodyLower = post.body.toLowerCase();
+            const matchIndex = bodyLower.indexOf(query);
+            
+            if (matchIndex !== -1 && !post.description.toLowerCase().includes(query) && !post.title.toLowerCase().includes(query)) {
+              const start = Math.max(0, matchIndex - 40);
+              const end = Math.min(post.body.length, matchIndex + query.length + 40);
+              excerptText = (start > 0 ? '...' : '') + post.body.substring(start, end) + (end < post.body.length ? '...' : '');
+            }
+            
+            const excerpt = document.createElement('div');
+            excerpt.className = 'search-result-excerpt';
+            
+            // Highlight query
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            excerpt.innerHTML = excerptText.replace(regex, '<mark>$1</mark>');
+            title.innerHTML = post.title.replace(regex, '<mark>$1</mark>');
+            
+            a.appendChild(title);
+            a.appendChild(excerpt);
+            li.appendChild(a);
+            searchResults.appendChild(li);
+          });
+        });
+      }
+      
+      function initPageFeatures() {
+        cleanupFunctions.forEach(fn => fn());
+        cleanupFunctions = [];
+
+        if (typeof hljs !== 'undefined') { hljs.highlightAll(); }
+        const swupContainer = document.getElementById('swup');
+        if (!swupContainer) return;
+
+        const images = document.querySelectorAll('article img');
+        let currentZoomedOverlay = null;
+
+        function openZoom(img) {
+          if (currentZoomedOverlay) return;
+          const ov = document.createElement('div');
+          ov.className = 'zoom-overlay active';
+          ov.style.display = 'flex';
+          ov.style.alignItems = 'center';
+          ov.style.justifyContent = 'center';
+          ov.style.cursor = 'zoom-out';
+          
+          const clone = document.createElement('img');
+          clone.src = img.src;
+          clone.alt = img.alt;
+          clone.style.maxWidth = '90vw';
+          clone.style.maxHeight = '90vh';
+          clone.style.objectFit = 'contain';
+          clone.style.borderRadius = '12px';
+          clone.style.boxShadow = '0 32px 80px rgba(0,0,0,0.5)';
+          clone.style.cursor = 'zoom-out';
+          clone.style.opacity = '0';
+          clone.style.transform = 'scale(0.92)';
+          clone.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.4,0,0.2,1)';
+          
+          ov.appendChild(clone);
+          document.body.appendChild(ov);
+          currentZoomedOverlay = ov;
+          cleanupFunctions.push(() => { if (currentZoomedOverlay) { currentZoomedOverlay.remove(); currentZoomedOverlay = null; } });
+          
+          // Animate in
+          requestAnimationFrame(() => {
+            clone.style.opacity = '1';
+            clone.style.transform = 'scale(1)';
+          });
+          
+          function closeZoom() {
+            clone.style.opacity = '0';
+            clone.style.transform = 'scale(0.92)';
+            setTimeout(() => {
+              ov.remove();
+              if (currentZoomedOverlay === ov) currentZoomedOverlay = null;
+            }, 300);
+          }
+          
+          ov.addEventListener('click', closeZoom);
+        }
+
+        images.forEach(img => {
+          img.style.cursor = 'zoom-in';
+          img.addEventListener('click', () => openZoom(img));
+        });
+
+      
+      const shareBtn = document.getElementById('share-btn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const fontStack = "'Times New Roman', 'Noto Serif SC', 'Songti SC', serif";
+          const segmenter = new Intl.Segmenter(navigator.language || 'zh-CN', { granularity: 'word' });
+          
+          function getLines(text, font, maxWidth) {
+             ctx.font = font;
+             const words = Array.from(segmenter.segment(text)).map(s => s.segment);
+             let lines = [];
+             let currentLine = '';
+             for (let n = 0; n < words.length; n++) {
+                 const testLine = currentLine + words[n];
+                 if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+                     lines.push(currentLine);
+                     currentLine = words[n];
+                 } else {
+                     currentLine = testLine;
+                 }
+             }
+             if (currentLine) lines.push(currentLine);
+             return lines;
+          }
+
+          const title = document.querySelector('article h1').innerText;
+          const titleFont = `bold 56px ${fontStack}`;
+          const titleLines = getLines(title, titleFont, 600);
+          
+          const desc = document.querySelector('article p.meta')?.innerText ||
+            document.querySelector('meta[name="description"]')?.content || '';
+          const descFont = `bold 32px ${fontStack}`;
+          const descLines = desc ? getLines(desc, descFont, 600) : [];
+          
+          const paragraphs = Array.from(document.querySelectorAll('article p:not(.meta)'));
+          let bodyText = paragraphs.map(p => p.innerText).join(' ').replace(/\s+/g, ' ').trim();
+          if (bodyText.length > 100) bodyText = bodyText.substring(0, 100) + '......';
+          const bodyFont = `26px ${fontStack}`;
+          const bodyLines = bodyText ? getLines(bodyText, bodyFont, 600) : [];
+          
+          let contentHeight = 140; 
+          contentHeight += titleLines.length * 76;
+          contentHeight += 20; 
+          
+          if (descLines.length > 0) {
+              contentHeight += descLines.length * 48;
+              contentHeight += 40;
+          }
+          
+          if (bodyLines.length > 0) {
+              contentHeight += bodyLines.length * 42;
+              contentHeight += 60;
+          }
+          
+          const footerHeight = 160;
+          const height = contentHeight + footerHeight;
+          const width = 800;
+          
+          canvas.width = width * 2;
+          canvas.height = height * 2;
+          canvas.style.width = width + 'px';
+          canvas.style.height = height + 'px';
+          ctx.scale(2, 2);
+
+          const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || (document.documentElement.getAttribute('data-theme') !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          ctx.fillStyle = isDark ? '#2C201A' : '#DDD6C1';
+          ctx.fillRect(0, 0, width, height);
+
+          ctx.fillStyle = isDark ? 'rgba(229, 160, 128, 0.09)' : 'rgba(128, 80, 48, 0.09)';
+          ctx.beginPath();
+          ctx.arc(0, 0, 300, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = isDark ? 'rgba(229, 160, 128, 0.06)' : 'rgba(128, 80, 48, 0.06)';
+          ctx.beginPath();
+          ctx.arc(width, 0, 400, 0, Math.PI * 2);
+          ctx.fill();
+          
+          let drawY = 140;
+          
+          ctx.fillStyle = isDark ? '#F0E6D8' : '#502010';
+          ctx.font = titleFont;
+          for (let line of titleLines) {
+              ctx.fillText(line, 100, drawY);
+              drawY += 76;
+          }
+          drawY += 20;
+          
+          if (descLines.length > 0) {
+              ctx.fillStyle = isDark ? '#E5A080' : '#805030';
+              ctx.font = descFont;
+              for (let line of descLines) {
+                  ctx.fillText(line, 100, drawY);
+                  drawY += 48;
+              }
+              drawY += 40;
+          }
+          
+          if (bodyLines.length > 0) {
+              ctx.fillStyle = isDark ? '#B8A89A' : '#807565';
+              ctx.font = bodyFont;
+              for (let line of bodyLines) {
+                  ctx.fillText(line, 100, drawY);
+                  drawY += 42;
+              }
+              drawY += 60;
+          }
+          
+          const siteName = document.querySelector('.site-brand h1').innerText;
+          const domain = window.location.host + window.location.pathname;
+          
+          ctx.fillStyle = isDark ? '#5A453A' : '#C4BCA8';
+          ctx.fillRect(100, height - 150, 600, 2);
+
+          ctx.font = `bold 28px ${fontStack}`;
+          ctx.fillStyle = isDark ? '#F0E6D8' : '#502010';
+          ctx.fillText(siteName, 100, height - 100);
+          
+          ctx.font = `italic 24px ${fontStack}`;
+          ctx.fillStyle = isDark ? '#B8A89A' : '#807565';
+          ctx.fillText(domain, 100, height - 60);
+
+          const dataUrl = canvas.toDataURL('image/png');
+          
+          const cardOverlay = document.createElement('div');
+          cardOverlay.className = 'zoom-overlay active';
+          cardOverlay.style.display = 'flex';
+          cardOverlay.style.flexDirection = 'column';
+          cardOverlay.style.alignItems = 'center';
+          cardOverlay.style.justifyContent = 'center';
+          
+          const imgElement = document.createElement('img');
+          imgElement.src = dataUrl;
+          imgElement.style.maxWidth = '85%';
+          imgElement.style.maxHeight = '75vh';
+          imgElement.style.borderRadius = '16px';
+          imgElement.style.boxShadow = 'var(--shadow-strong)';
+          
+          const tip = document.createElement('p');
+          tip.innerText = '长按或右键保存图片 (Long press or right click to save)';
+          tip.style.color = 'var(--text)';
+          tip.style.marginTop = '20px';
+          tip.style.background = 'var(--paper)';
+          tip.style.padding = '8px 16px';
+          tip.style.borderRadius = '8px';
+          tip.style.fontSize = '0.9rem';
+          
+          cardOverlay.appendChild(imgElement);
+          cardOverlay.appendChild(tip);
+          document.body.appendChild(cardOverlay);
+          cleanupFunctions.push(() => cardOverlay.remove());
+          
+          cardOverlay.addEventListener('click', (e) => {
+              if(e.target === cardOverlay) {
+                  cardOverlay.remove();
+              }
+          });
+        });
+      }
+      
+      const article = document.querySelector('.article-shell article');
+      if (article) {
+        const headings = article.querySelectorAll('h2, h3, h4');
+        if (headings.length > 0) {
+          const tocContainer = document.createElement('div');
+          tocContainer.className = 'toc-container';
+          
+          const tocTitle = document.createElement('div');
+          tocTitle.className = 'toc-title';
+          tocTitle.innerText = 'Contents';
+          tocContainer.appendChild(tocTitle);
+          
+          headings.forEach((heading, index) => {
+            let id = heading.id;
+            if (!id) {
+                id = heading.innerText.replace(/[\s]+/g, '-').replace(/[^\w\u4e00-\u9fa5\-]+/g, '').toLowerCase();
+                if (!id) id = 'heading-' + index;
+                heading.id = id;
+            }
+            
+            const link = document.createElement('a');
+            link.href = '#' + id;
+            link.className = 'toc-link toc-level-' + heading.tagName.charAt(1);
+            link.innerText = heading.innerText;
+            tocContainer.appendChild(link);
+          });
+          
+          document.body.appendChild(tocContainer);
+          cleanupFunctions.push(() => tocContainer.remove());
+
+          // Mobile TOC Button & Drawer Logic
+          const mobileTocBtn = document.createElement('button');
+          mobileTocBtn.className = 'mobile-toc-btn';
+          mobileTocBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/></svg>';
+          document.body.appendChild(mobileTocBtn);
+          cleanupFunctions.push(() => mobileTocBtn.remove());
+
+          const tocDrawerOverlay = document.createElement('div');
+          tocDrawerOverlay.className = 'zoom-overlay';
+          tocDrawerOverlay.style.zIndex = '998';
+          document.body.appendChild(tocDrawerOverlay);
+          cleanupFunctions.push(() => tocDrawerOverlay.remove());
+
+          function closeTocDrawer() {
+             tocContainer.classList.remove('drawer-open');
+             tocDrawerOverlay.classList.remove('active');
+          }
+
+          mobileTocBtn.addEventListener('click', () => {
+            if (tocContainer.classList.contains('drawer-open')) {
+              closeTocDrawer();
+            } else {
+              tocContainer.classList.add('drawer-open');
+              tocDrawerOverlay.classList.add('active');
+            }
+          });
+
+          tocDrawerOverlay.addEventListener('click', closeTocDrawer);
+
+          // Highlight active TOC entry on scroll
+          const tocLinks = tocContainer.querySelectorAll('.toc-link');
+          tocLinks.forEach(l => l.addEventListener('click', closeTocDrawer));
+          const headingEls = Array.from(headings);
+
+          function setActive(id) {
+            tocLinks.forEach(l => {
+              if (l.getAttribute('href') === '#' + id) {
+                l.classList.add('toc-active');
+                // Scroll the TOC so the active item stays visible
+                const containerRect = tocContainer.getBoundingClientRect();
+                const linkRect = l.getBoundingClientRect();
+                if (linkRect.top < containerRect.top + 20) {
+                  tocContainer.scrollTop -= (containerRect.top + 20 - linkRect.top);
+                } else if (linkRect.bottom > containerRect.bottom - 20) {
+                  tocContainer.scrollTop += (linkRect.bottom - containerRect.bottom + 20);
+                }
+              } else {
+                l.classList.remove('toc-active');
+              }
+            });
+          }
+
+          const observer = new IntersectionObserver(
+            (entries) => {
+              // Find the topmost heading that is intersecting or has passed
+              let best = null;
+              let bestTop = Infinity;
+              entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                  const top = entry.boundingClientRect.top;
+                  if (top < bestTop) {
+                    bestTop = top;
+                    best = entry.target;
+                  }
+                }
+              });
+              if (best) {
+                setActive(best.id);
+              }
+            },
+            {
+              rootMargin: '0px 0px -60% 0px',
+              threshold: 0,
+            }
+          );
+
+          headingEls.forEach(h => observer.observe(h));
+          cleanupFunctions.push(() => observer.disconnect());
+
+          // Fallback: on scroll, find the heading closest to viewport top
+          let ticking = false;
+          const tocScrollHandler = () => {
+            if (!ticking) {
+              requestAnimationFrame(() => {
+                const scrollY = window.scrollY + 100;
+                let active = headingEls[0];
+                for (const h of headingEls) {
+                  if (h.offsetTop <= scrollY) active = h;
+                  else break;
+                }
+                if (active) setActive(active.id);
+                ticking = false;
+              });
+              ticking = true;
+            }
+          };
+          window.addEventListener('scroll', tocScrollHandler);
+          cleanupFunctions.push(() => window.removeEventListener('scroll', tocScrollHandler));
+
+          // Set initial active on load
+          if (headingEls[0]) setActive(headingEls[0].id);
+        }
+      }
+      } // end initPageFeatures
+
+      initPageFeatures();
+      swup.hooks.on('page:view', initPageFeatures);
+    });
+  </script>
+</body>
+</html>

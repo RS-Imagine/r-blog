@@ -378,24 +378,23 @@ footer {
 .zoom-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: var(--bg);
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
-  z-index: 100;
+  z-index: 1000;
 }
 .zoom-overlay.active {
-  opacity: 0.95;
+  opacity: 1;
   visibility: visible;
 }
 article img {
-  transition: transform 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
-article img.zoomed {
-  z-index: 101;
-  cursor: zoom-out !important;
-}
+
 .toc-container {
   position: fixed;
   left: max(12px, calc(50vw - var(--max-width) / 2 - 230px));
